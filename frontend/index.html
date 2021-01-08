@@ -2,9 +2,14 @@
 <html>
 <head>
 <link rel="stylesheet" href="style.css">
-<script src="script.js"></script>
+<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="script.js" type="text/babel" defer></script>
+<!--Just for dev, babel should be run server side once and cached, not offloaded whole onto the client. -->
 </head>
 <body>
 testing
+<div id="like_button_container"></div>
 </body>
 </html>
