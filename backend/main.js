@@ -1,4 +1,10 @@
 const mysql = require('mysql2');
+const http = require('http');
+const wsServerLib = require('websocket').server;
+
+let http_server;
+
+
 
 let mysql_pool;
 let mysql_promisepool;
@@ -93,10 +99,34 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
 //6) Add article id to words table
 }
 
+async function init_http() {
+  http_server = http.createServer( function(request,response) {
+    response.writeHead( 404 );
+    response.end();
+  });
+  await http_server.listen( 3000, function() {
+    console.log( "Listening on port 3000" );
+  });
+  wsServer = new wsServerLib({
+    httpServer: http_server
+  });
+  console.log( "HTTP initialized" );
+}
+
 async function main() {
-  await init_mysql_pool();
+  var done = await init_mysql_pool();
   //do_process_article( "article_title", "12345", "testing, test. this!_ ye-p!" );
-  search( "testing" );
+  //search( "testing" );
+  var doneB = await init_http();
+  var doneC = await initialize_websockets();
+}
+
+async function initialize_websockets() {
+  wsServer.on( 'request', function(request) {
+    var conn = request.accept( null, request.origin );
+    console.log( "New connection established." );
+  });
+  console.log( "Websockets initialized." );
 }
 
 async function search( inWord ) {

@@ -9,7 +9,40 @@
 <!--Just for dev, babel should be run server side once and cached, not offloaded whole onto the client. -->
 </head>
 <body>
-testing
-<div id="like_button_container"></div>
+<div id="main_container">
+  <div id="menu_container">
+    <button id="search_interface_button">Search</button>
+    <button id="create_article_interface_button">Create</button>
+  </div>
+  <div id="search_interface">
+    <div id="calendar_container">
+      <input type="date" id="start_range" min="2015-06-01" max="2021-01-20">
+      <input type="date" id="end_range" min="2015-06-01" max="2021-01-20">
+    </div>
+    <div id="tag_container">
+
+    </div>
+    <div id="search_bar_container">
+      <input type="text" id="search_bar"/>
+      <button id="search_button">Search</button>
+    </div>
+    <div id="article_container">
+    </div>
+  </div>
+  <div id="create_article_interface" style="display:none;">
+    <div id="create_article_title_container">
+      Article Title:
+      <input id="create_article_type" type="text"/>
+    </div>
+    <div id="create_article_calendar_container">
+      <input type="date" id="create_article_date" min="2015-06-01" max="2021-01-20">
+    </div>
+    <div id="create_article_body">
+      <textarea></textarea>
+    </div>
+  </div>
+</div>
+<!--testing-->
+<!--<div id="like_button_container"></div>-->
 </body>
 </html>
