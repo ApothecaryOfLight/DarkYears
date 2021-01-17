@@ -2,3 +2,15 @@
 font-weight: bold;
 color: blue;
 }
+
+.tag_container {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.tag {
+  color: black;
+  background-color: blue;
+  border-radius: 2px;
+  margin: 4px;
+}

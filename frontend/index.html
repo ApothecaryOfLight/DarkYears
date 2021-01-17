@@ -10,37 +10,41 @@
 </head>
 <body>
 <div id="main_container">
+
+  <!--Menu-->
   <div id="menu_container">
     <button id="search_interface_button">Search</button>
     <button id="create_article_interface_button">Create</button>
   </div>
+
+  <!--Search interface-->
   <div id="search_interface">
     <div id="calendar_container">
       <input type="date" id="start_range" min="2015-06-01" max="2021-01-20">
       <input type="date" id="end_range" min="2015-06-01" max="2021-01-20">
     </div>
-    <div id="tag_container">
-
+    <div id="tag_container" class="tag_container">
+      Empty
     </div>
     <div id="search_bar_container">
       <input type="text" id="search_bar"/>
-      <button id="search_button">Search</button>
+      <button id="search_button">Add Search Term</button>
     </div>
     <div id="article_container">
     </div>
   </div>
+
+  <!--Create article interface-->
   <div id="create_article_interface" style="display:none;">
     <div id="create_article_title_container">
-      Article Title:
+      <span>Article Title:</span>
       <input id="create_article_type" type="text"/>
     </div>
-    <div id="create_article_calendar_container">
-      <input type="date" id="create_article_date" min="2015-06-01" max="2021-01-20">
-    </div>
-    <div id="create_article_body">
-      <textarea></textarea>
-    </div>
+    <input type="date" id="create_article_date" min="2015-06-01" max="2021-01-20" style="display:block;">
+    <textarea id="create_article_text" style="display:block"></textarea>
+    <button id="submit_article">Submit</button>
   </div>
+
 </div>
 <!--testing-->
 <!--<div id="like_button_container"></div>-->

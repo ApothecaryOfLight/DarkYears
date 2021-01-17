@@ -125,6 +125,17 @@ async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
     var conn = request.accept( null, request.origin );
     console.log( "New connection established." );
+    conn.on('message', function(message) {
+      console.log( "Message received!" );
+      const inMessage = JSON.parse( message,utf8Data );
+      console.table( inMessage );
+      //If search, return search query from database.
+      
+      //If add article, index article into database.
+      
+      //If requesting article, return article from database.
+      
+    });
   });
   console.log( "Websockets initialized." );
 }
