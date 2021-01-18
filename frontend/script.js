@@ -64,7 +64,7 @@ class SearchTagManager extends React.Component {
 
     const thisHandle = this;
     const search_tag_container = document.getElementById("tag_container");
-    const add_search_term_button = document.getElementById("search_button");
+    const add_search_term_button = document.getElementById("add_search_tag_button");
     const search_tag_input_field = document.getElementById("search_bar");
     add_search_term_button.addEventListener("click",function() {
       //1) Add search term to search_tag_container
@@ -103,6 +103,43 @@ class SearchTagManager extends React.Component {
   }
 }
 
+class ArticleManager extends React.Component {
+  constructor( articles, ws ) {
+    super( articles, ws );
+    this.state = {...articles};
+  }
+  componentDidMount() {
+    this.setState( this.state.articles );
+    const articles_component = this;
+    ws.addEventListener( 'message', function(event) {
+      console.log( event.data );
+      const in_articles = JSON.parse( event.data );
+      if( in_articles.type == "articles" ) {
+        console.log( "articles!" );
+        console.dir( in_articles.articles );
+        console.dir( in_articles.articles[0] );
+        let key_counter = 0;
+        in_articles.articles[0].forEach( element => {
+          element.key = key_counter;
+          key_counter++;
+        });
+        articles_component.state.articles = in_articles.articles[0];
+        articles_component.setState( articles_component.state.articles );
+      }
+    });
+  }
+  render() {
+    console.dir( this );
+    //console.log( typeof( this.state.articles ) );
+    const dom = this.state.articles.map( (article) =>
+      <div key={article.key}>{article.article_title} : {article.article_text}</div>
+    );
+    console.log( dom );
+    return(
+      <div id='articles_container'>{dom}</div>
+    );
+  }
+}
 
 /*
 Websocket
@@ -140,7 +177,51 @@ const search_terms = [
   }
 ]
 
+const search_button = document.getElementById("search_button");
+search_button.addEventListener( "click", function() {
+  //Convert search terms from DOM appropriate format to array
+  const search_arr = [];
+  for( const key in search_terms ) {
+    search_arr.push( search_terms[key].text );
+  }
+
+  //Convert search term array to object w/ event type and JSONify it.
+  const search_json = JSON.stringify({ event: "search", tags: search_arr });
+
+  //Send search query to server.
+  ws.send( search_json );
+});
+
+const articles = [];
+
 ReactDOM.render(
   <SearchTagManager search_terms={ search_terms }/>,
   document.getElementById('tag_container')
 );
+
+ReactDOM.render(
+  <ArticleManager articles={articles} ws={ws}/>,
+  document.getElementById('article_container')
+);
+
+const submit_article_button = document.getElementById("submit_article");
+const article_title_input = document.getElementById("create_article_type");
+const article_date_input = document.getElementById("create_article_date");
+const article_text_input = document.getElementById("create_article_text");
+submit_article_button.addEventListener("click", function() {
+  const article_title = article_title_input.value;
+  const article_body = article_text_input.value;
+  const article_date = article_date_input.value;
+  if( article_title == "" || article_body == "" || article_date == "" ) {
+    console.log( "Missing article part." );
+    return;
+  }
+  const article_obj = {
+    title: article_title,
+    date: article_date,
+    body: article_body
+  }
+  console.dir( article_obj );
+  const article_json = JSON.stringify({event: "new_article", article: article_obj});
+  ws.send( article_json );
+});

@@ -40,10 +40,16 @@ let article_title = "testing apart article";
 let article_date = "2015_06_20";
 let article_text = "this is the text of an article for Dark Years.";
 
+function distinct( value, index, self ) {
+  return self.indexOf(value) === index;
+}
+
 function do_process_article_text( inArticleText ) {
   let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
   let words = punctuation_removed.split(" ");
+  words = words.filter(distinct);
+  console.log( "UNQ:" + words );
   let words_obj = {};
   words.forEach( word => {
     if( word.length > 2 ) {
@@ -60,10 +66,11 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   console.log("do_process_article");
 //1) Get article_id (ensure it is reserved, if func fails retire ID).
   const [article_id_rows,article_id_fields] = await mysql_promisepool.query(
-    "SELECT generate_id();"
+    "SELECT DarkYearsDB.generate_new_id();"
   );
-  let new_id = article_id_rows[0]['generate_id()'];
-  console.log( new_id );
+  console.table( article_id_rows );
+  let new_id = article_id_rows[0]['DarkYearsDB.generate_new_id()'];
+  console.log( "new_ID: " + new_id );
 //2) Add article_id, title and text to articles table.
   const [rows,fields] = await mysql_promisepool.query(
     "INSERT INTO articles ( article_id, article_title, article_text ) " +
@@ -75,7 +82,7 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   );
   console.log( rows, fields );
 //3) Process text body into object.
-  let WordsArray = do_process_article_text( inArticleText );
+  let WordsArray = do_process_article_text( inArticleText + " " + inArticleTitle );
 //4) Process date into calendar table
   
 //5) Add words to calendar table.
@@ -127,10 +134,21 @@ async function initialize_websockets() {
     console.log( "New connection established." );
     conn.on('message', function(message) {
       console.log( "Message received!" );
-      const inMessage = JSON.parse( message,utf8Data );
-      console.table( inMessage );
+      //console.table( message );
+      const inMessage = JSON.parse( message.utf8Data );
+      //console.table( inMessage );
       //If search, return search query from database.
-      
+      if( inMessage.event == "search" ) {
+        const tags_ref = inMessage.tags;
+        search( tags_ref, conn );
+        /*tags_ref.forEach( tag => {
+          const result = await search( tag, conn );
+          console.log( result );
+        });*/
+      } else if( inMessage.event == "new_article" ) {
+        const article_ref = inMessage.article;
+        do_process_article( article_ref.title, article_ref.date, article_ref.body );
+      }
       //If add article, index article into database.
       
       //If requesting article, return article from database.
@@ -140,20 +158,37 @@ async function initialize_websockets() {
   console.log( "Websockets initialized." );
 }
 
-async function search( inWord ) {
-  let first_letter = inWord.charAt(0).toUpperCase();
-  let second_letter = inWord.charAt(1).toUpperCase();
-  let word = inWord.toUpperCase();
-  let query_text = "SELECT word, article_id_fk, article_title " +
-    "FROM " + first_letter + "_" + second_letter + " " +
-    "WHERE word= \'" +
-    word + "\';";
-  console.log( query_text );
-  const [word_rows,word_fields] = await mysql_promisepool.query(
-    query_text
-  );
-  console.table( word_rows );
-  //console.dir( word_fields );
+//TODO: Make this return scrollable units of content
+async function search( inWords, conn ) {
+  const contents = [];
+  for( inWord of inWords ) {
+    let first_letter = inWord.charAt(0).toUpperCase();
+    let second_letter = inWord.charAt(1).toUpperCase();
+    let word = inWord.toUpperCase();
+    const table_name = first_letter + "_" + second_letter;
+    let query_text = "SELECT " +
+      table_name + ".word, " +
+      table_name + ".article_id_fk, " +
+      table_name + ".article_title, " +
+      "articles.article_text " +
+      "FROM " + table_name + " " +
+      "INNER JOIN articles ON " + table_name + ".article_id_fk = articles.article_id " +
+      "WHERE " + table_name + ".word= \'" +
+      word + "\';";
+    console.log( query_text );
+    const [word_rows,word_fields] = await mysql_promisepool.query(
+      query_text
+    );
+    //console.table( word_rows );
+
+    //conn.send( JSON.stringify( word_rows ) );
+    console.table( word_rows );
+    console.log( typeof( word_rows ) );
+    if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
+  }
+  console.log( contents );
+  //return word_rows;
+  conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
 }
 
 main();
