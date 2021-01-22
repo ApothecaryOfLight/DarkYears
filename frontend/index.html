@@ -2,6 +2,7 @@
 <html>
 <head>
 <link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -13,13 +14,31 @@
 
   <!--Menu-->
   <div id="menu_container">
-    <button id="search_interface_button">Search</button>
-    <button id="create_article_interface_button">Create</button>
+    <div class="button-container">
+      <span id="search_interface_button"
+        class="material-icons md-48 button"
+      >
+        search
+      </span>
+    </div>
+    <div class="button-container">
+      <span id="create_article_interface_button"
+        class="material-icons md-48 button"
+      >
+        add
+      </span>
+    </div>
+    <div class="button-container">
+      <span id="profile_interface_button"
+        class="material-icons md-48 button">
+        person
+      </span>
+    </div>
   </div>
 
   <!--Search interface-->
   <div id="search_interface">
-    <div id="calendar_container">
+    <div id="date_picker_container">
       <input type="date" id="start_range" min="2015-06-01" max="2021-01-20">
       <input type="date" id="end_range" min="2015-06-01" max="2021-01-20">
     </div>
@@ -27,10 +46,10 @@
       <input type="text" id="search_bar"/>
       <button id="add_search_tag_button">Add Search Term</button>
     </div>
-    <div id="tag_container" class="tag_container">
+    <div id="tag_container">
       Empty
     </div>
-    <button id="search_button">Search</button>
+    <!--button id="search_button" class="search_button">Search</button-->
     <div id="article_container">
     </div>
   </div>

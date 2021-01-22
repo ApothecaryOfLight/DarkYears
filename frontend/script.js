@@ -3,31 +3,6 @@
 /*
 React
 */
-/*const e = React.createElement;
-
-class LikeButton extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { liked: false };
-  }
-
-  render() {
-    if (this.state.liked) {
-      return 'You liked this.';
-    }
-
-return (
-  <button onClick={() => this.setState({ liked: true })}>
-    Like
-  </button>
-);
-  }
-}
-
-const domContainer = document.querySelector('#like_button_container');
-ReactDOM.render( e(LikeButton), domContainer );*/
-
-
 class UID {
   constructor() {
     this.UIDs = [];
@@ -57,34 +32,60 @@ class UID {
 /*
 Search Tag Manager
 */
-class SearchTagManager extends React.Component {
-  constructor( search_terms ) {
-    super( search_terms );
-    this.state = {...search_terms};
+function run_search( component_handle, ws ) {
+  console.log( "Running search..." );
+  const search_tag_input_field = document.getElementById("search_bar");
 
-    const thisHandle = this;
-    const search_tag_container = document.getElementById("tag_container");
-    const add_search_term_button = document.getElementById("add_search_tag_button");
-    const search_tag_input_field = document.getElementById("search_bar");
-    add_search_term_button.addEventListener("click",function() {
-      //1) Add search term to search_tag_container
-      console.dir( thisHandle );
-      thisHandle.state.search_terms.push({
-        text: search_tag_input_field.value,
-        UID : myUID.generateUID('tags')
-      });
-      //2) Update react component to display the state change to the user
-      thisHandle.setState( thisHandle.state.search_terms );
-      //2) Empty input field
-      search_tag_input_field.value = "";
+  //1) Add search term to search_tag_container
+  const new_tag = search_tag_input_field.value;
+  if( new_tag != "" ) {
+    component_handle.state.search_terms.push({
+      text: search_tag_input_field.value,
+      UID : myUID.generateUID('tags')
     });
+  }
 
+  //2) Update react component to display the state change to the user
+  component_handle.setState( component_handle.state.search_terms );
+
+  //3) Empty input field
+  search_tag_input_field.value = "";
+
+  //Convert search terms from DOM appropriate format to array
+  const search_arr = [];
+  //console.dir( search_terms );
+  for( const key in search_terms ) {
+    search_arr.push( search_terms[key].text );
+  }
+
+  //console.log( search_arr );
+
+  //Convert search term array to object w/ event type and JSONify it.
+  const search_json = JSON.stringify({ event: "search", tags: search_arr });
+
+  //Send search query to server.
+  ws.send( search_json );
+}
+class SearchTagManager extends React.Component {
+  constructor( search_terms, ws ) {
+    super( search_terms, ws );
+    this.state = {...search_terms};
   }
   componentDidMount() {
     this.setState( this.state.search_terms );
+    const thisHandle = this;
+    const search_tag_container = document.getElementById("tag_container");
+    const add_search_term_button = document.getElementById("add_search_tag_button");
+    //console.log( run_search );
+    add_search_term_button.addEventListener("click",function() {
+      //console.dir( thisHandle );
+      //console.dir( parent );
+      run_search( thisHandle, ws );
+    });
   }
   doClick( inUID ) {
-    console.dir( inUID );
+    console.log("Deleting tag..." );
+    //console.dir( inUID );
     search_terms.forEach( (search_term, index) => {
       if( search_term.UID == inUID ) {
         search_terms.splice( index, 1 );
@@ -92,6 +93,7 @@ class SearchTagManager extends React.Component {
     });
     myUID.retireUID( "tags", inUID );
     this.setState( this.state.search_terms );
+    run_search( this, ws );
   }
   render() {
     const search_tags_element = this.state.search_terms.map( (search_term) =>
@@ -99,7 +101,7 @@ class SearchTagManager extends React.Component {
       <button onClick={ () => this.doClick(search_term.UID) }>X</button>
       </span>
     );
-    return( <div id='tag_container' className='tag_container'>{search_tags_element}</div> );
+    return( <div id='tags' className='tags'>{search_tags_element}</div> );
   }
 }
 
@@ -112,31 +114,51 @@ class ArticleManager extends React.Component {
     this.setState( this.state.articles );
     const articles_component = this;
     ws.addEventListener( 'message', function(event) {
-      console.log( event.data );
+      //console.log( event.data );
       const in_articles = JSON.parse( event.data );
       if( in_articles.type == "articles" ) {
-        console.log( "articles!" );
-        console.dir( in_articles.articles );
-        console.dir( in_articles.articles[0] );
+        //console.log( "articles!" );
+        //console.dir( in_articles.articles );
+        //console.dir( in_articles.articles[0] );
         let key_counter = 0;
-        in_articles.articles[0].forEach( element => {
-          element.key = key_counter;
-          key_counter++;
-        });
-        articles_component.state.articles = in_articles.articles[0];
-        articles_component.setState( articles_component.state.articles );
+        if( in_articles.articles[0] !== undefined ) {
+          console.log( "Articles received!" );
+          in_articles.articles[0].forEach( element => {
+            element.key = key_counter;
+            key_counter++;
+          });
+          articles_component.state.articles = in_articles.articles[0];
+          articles_component.setState( articles_component.state.articles );
+        } else {
+          console.log( "No articles received!" );
+          articles_component.state.articles = [];
+          //console.log( "Length: " + articles_component.state.articles.length );
+          articles_component.setState( [] );
+        }
       }
     });
   }
   render() {
-    console.dir( this );
+    console.log( "Rendering!" );
+    //console.dir( this );
     //console.log( typeof( this.state.articles ) );
+    //console.dir( "Articles: " + this.state.articles.length );
+    if( this.state.articles.length == 0 ) {
+      console.log( "Returned empty" );
+      const empty_return = <div className='article'>Search Returned Nothing!</div>;
+      return( empty_return );
+    }
+    //console.dir( this.state.articles.map );
     const dom = this.state.articles.map( (article) =>
-      <div key={article.key}>{article.article_title} : {article.article_text}</div>
+      <div className='article' key={article.key}>
+        <span className='article_title'>{article.article_title}</span>
+        <span className='article_date'>10/10/2020</span>
+        <div className='article_text'>{article.article_text}</div>
+      </div>
     );
-    console.log( dom );
+    //console.log( dom );
     return(
-      <div id='articles_container'>{dom}</div>
+      dom
     );
   }
 }
@@ -156,12 +178,12 @@ const create_article_interface_button = document.getElementById("create_article_
 const search_interface = document.getElementById("search_interface");
 const create_article_interface = document.getElementById("create_article_interface");
 search_interface_button.addEventListener("click",function(){
-  search_interface.style.display = "block";
+  search_interface.style.display = "grid";
   create_article_interface.style.display = "none";
 });
 create_article_interface_button.addEventListener("click",function(){
   search_interface.style.display = "none";
-  create_article_interface.style.display = "block";
+  create_article_interface.style.display = "grid";
 });
 
 const myUID = new UID();
@@ -175,27 +197,12 @@ const search_terms = [
     text : "tag2",
     UID : myUID.generateUID('tags')
   }
-]
-
-const search_button = document.getElementById("search_button");
-search_button.addEventListener( "click", function() {
-  //Convert search terms from DOM appropriate format to array
-  const search_arr = [];
-  for( const key in search_terms ) {
-    search_arr.push( search_terms[key].text );
-  }
-
-  //Convert search term array to object w/ event type and JSONify it.
-  const search_json = JSON.stringify({ event: "search", tags: search_arr });
-
-  //Send search query to server.
-  ws.send( search_json );
-});
+];
 
 const articles = [];
 
 ReactDOM.render(
-  <SearchTagManager search_terms={ search_terms }/>,
+  <SearchTagManager search_terms={search_terms} ws={ws}/>,
   document.getElementById('tag_container')
 );
 
