@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
@@ -12,29 +13,43 @@
 <body>
 <div id="main_container">
 
+
   <!--Menu-->
   <div id="menu_container">
-    <div class="button-container">
-      <span id="search_interface_button"
-        class="material-icons md-48 button"
-      >
-        search
+    <span id="buttons_bar">
+      <div id="search_interface_button" class="button-container">
+        <span class="material-icons md-48 button">
+          search
+        </span>
+      </div>
+      <div id="create_article_interface_button" class="button-container">
+        <span class="material-icons md-48 button">
+          add
+        </span>
+      </div>
+      <div id="profile_interface_button" class="button-container">
+        <span class="material-icons md-48 button">
+          person
+        </span>
+      </div>
+      <div id="settings_interface_button" class="button-container">
+        <span class="material-icons md-48 button">
+          settings
+        </span>
+      </div>
+      <div id="contact_interface_button" class="button-container">
+        <span class="material-icons md-48 button">
+          email
+        </span>
+      </div>
+    </span>
+    <span id="logging_container">
+      <span id="logging_element" class="button">
+        Login
       </span>
-    </div>
-    <div class="button-container">
-      <span id="create_article_interface_button"
-        class="material-icons md-48 button"
-      >
-        add
-      </span>
-    </div>
-    <div class="button-container">
-      <span id="profile_interface_button"
-        class="material-icons md-48 button">
-        person
-      </span>
-    </div>
+    </span>
   </div>
+
 
   <!--Search interface-->
   <div id="search_interface">
@@ -47,12 +62,13 @@
       <button id="add_search_tag_button">Add Search Term</button>
     </div>
     <div id="tag_container">
-      Empty
+      Search Terms:
     </div>
     <!--button id="search_button" class="search_button">Search</button-->
     <div id="article_container">
     </div>
   </div>
+
 
   <!--Create article interface-->
   <div id="create_article_interface" style="display:none;">
@@ -64,6 +80,25 @@
     <textarea id="create_article_text" style="display:block"></textarea>
     <button id="submit_article">Submit</button>
   </div>
+
+
+  <!--Profile interface-->
+  <div id="profile_interface" style="display:none;">
+    Profile here.
+  </div>
+
+
+  <!--Settings interface-->
+  <div id="settings_interface" style="display:none;">
+    Settings here
+  </div>
+
+
+  <!--Contact interface-->
+  <div id="contact_interface" style="display:none;">
+    Contact Here
+  </div>
+
 
 </div>
 <!--testing-->

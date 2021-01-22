@@ -98,10 +98,11 @@ class SearchTagManager extends React.Component {
   render() {
     const search_tags_element = this.state.search_terms.map( (search_term) =>
       <span className='tag' key={search_term.UID}>{search_term.text}
-      <button onClick={ () => this.doClick(search_term.UID) }>X</button>
+        <button className='close_tag' 
+          onClick={ () => this.doClick(search_term.UID) }>X</button>
       </span>
     );
-    return( <div id='tags' className='tags'>{search_tags_element}</div> );
+    return( search_tags_element );
   }
 }
 
@@ -151,8 +152,10 @@ class ArticleManager extends React.Component {
     //console.dir( this.state.articles.map );
     const dom = this.state.articles.map( (article) =>
       <div className='article' key={article.key}>
-        <span className='article_title'>{article.article_title}</span>
-        <span className='article_date'>10/10/2020</span>
+        <div className='article_top'>
+          <span className='article_title'>{article.article_title}</span>
+          <span className='article_date'>10/10/2020</span>
+        </div>
         <div className='article_text'>{article.article_text}</div>
       </div>
     );
@@ -173,10 +176,34 @@ try{
   console.error( error );
 }
 
-const search_interface_button = document.getElementById("search_interface_button");
-const create_article_interface_button = document.getElementById("create_article_interface_button");
-const search_interface = document.getElementById("search_interface");
-const create_article_interface = document.getElementById("create_article_interface");
+const interfaces = [ "search", "create_article", "profile", "settings", "contact" ];
+
+function set_interface( target ) {
+  interfaces.forEach( target_name => {
+    const interface_name = target_name + "_interface";
+    const interface_handle = document.getElementById( interface_name );
+    if( target_name == target ) {
+      interface_handle.style.display = "grid";
+    } else {
+      interface_handle.style.display = "none";
+    }
+  });
+}
+
+interfaces.forEach( interface_name => {
+  const button_name = interface_name + "_interface_button";
+  const button_handle = document.getElementById( button_name );
+  button_handle.addEventListener( "click", function() {
+    set_interface( interface_name );
+  });
+});
+
+/*  const search_interface_button = document.getElementById("search_interface_button");
+  const create_article_interface_button = document.getElementById("create_article_interface_button");
+  const profile_interface_button = document.getElementById("profile_interface_button");
+  const settings_interface_button = document.getElementById("settings_interface_button");
+  const contact_interface_button = document.getElementById("contact_interface_button");
+
 search_interface_button.addEventListener("click",function(){
   search_interface.style.display = "grid";
   create_article_interface.style.display = "none";
@@ -184,7 +211,7 @@ search_interface_button.addEventListener("click",function(){
 create_article_interface_button.addEventListener("click",function(){
   search_interface.style.display = "none";
   create_article_interface.style.display = "grid";
-});
+});*/
 
 const myUID = new UID();
 
