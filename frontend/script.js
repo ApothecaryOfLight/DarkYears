@@ -124,6 +124,7 @@ class ArticleManager extends React.Component {
         let key_counter = 0;
         if( in_articles.articles[0] !== undefined ) {
           console.log( "Articles received!" );
+          console.dir( in_articles );
           in_articles.articles[0].forEach( element => {
             element.key = key_counter;
             key_counter++;
@@ -175,6 +176,20 @@ try{
 } catch( error ) {
   console.error( error );
 }
+
+ws.addEventListener( 'close', function(event) {
+  console.group();
+  console.log( "Websocket closed!" );
+  console.dir( event );
+  console.groupEnd();
+});
+
+ws.addEventListener( 'error', function(event) {
+  console.group();
+  console.log( "Websocket error!" );
+  console.dir( event );
+  console.groupEnd();
+});
 
 const interfaces = [ "search", "create_article", "profile", "settings", "contact" ];
 
