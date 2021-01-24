@@ -67,49 +67,41 @@
     <!--/span-->
   </div>
 
-  <img src="george.jpg" style="width:100%;">
-
-  <div id="title" style="font-family: 'Cinzel Decorative', cursive; text-align: center; font-size: 5vw;">
+  <div id="title" style="font-family: 'Cinzel Decorative', cursive; text-align: center; font-size: 3.5vw;">
     Dark Years: The Disasterous Presidency of Donald Trump
   </div>
+  <img src="george.jpg" style="width:100%;">
 
   <!--Search interface-->
   <div id="search_interface">
+    <div id="search_interface_title">Search for Articles</div>
     <div id="date_picker_container">
-      <!--input type="date" id="start_range" min="2015-06-01" max="2021-01-20"-->
-      <!--input type="date" id="end_range" min="2015-06-01" max="2021-01-20"-->
-      	  <div class="row">
-	    <div class="col-sm-12">
-	      <div id="slider-range"></div>
-	    </div>
-	  </div>
-	  <div class="row slider-labels">
-	    <div class="col-xs-6 caption">
-	      <strong>Min:</strong> <span id="slider-range-value1"></span>
-	    </div>
-	    <div class="col-xs-6 text-right caption">
-	      <strong>Max:</strong> <span id="slider-range-value2"></span>
-	    </div>
-	  </div>
-	  <div class="row">
-	    <div class="col-sm-12">
-	      <form>
-	        <input type="hidden" name="min-value" value="">
-	        <input type="hidden" name="max-value" value="">
-	      </form>
-	    </div>
-	  </div>
+      <div id="date_range_title" style="text-align:center;">Date Range</div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div id="slider-range"></div>
+        </div>
+      </div>
+      <div id="date_display" class="row slider-labels">
+        <span id="slider-range-value1"></span>
+        <strong>&nbsp;to&nbsp;</strong>
+        <span id="slider-range-value2"></span>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <form>
+            <input type="hidden" name="min-value" value="">
+            <input type="hidden" name="max-value" value="">
+          </form>
+        </div>
+      </div>
     </div>
     <div id="search_bar_container">
-      <input type="text" id="search_bar"/>
+      <input type="text" id="search_bar" placeholder="Search"/>
       <button id="add_search_tag_button">Add Search Term</button>
     </div>
-    <div id="tag_container">
-      Search Terms:
-    </div>
-    <!--button id="search_button" class="search_button">Search</button-->
-    <div id="article_container">
-    </div>
+    <div id="tag_container"></div>
+    <div id="article_container"></div>
   </div>
 
 
