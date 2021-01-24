@@ -116,20 +116,22 @@ class ArticleManager extends React.Component {
     const articles_component = this;
     ws.addEventListener( 'message', function(event) {
       //console.log( event.data );
+      articles_component.state.articles = [];
+      articles_component.setState( [] );
       const in_articles = JSON.parse( event.data );
       if( in_articles.type == "articles" ) {
-        //console.log( "articles!" );
-        //console.dir( in_articles.articles );
-        //console.dir( in_articles.articles[0] );
-        let key_counter = 0;
-        if( in_articles.articles[0] !== undefined ) {
+        console.log( in_articles.articles.length );
+        if( in_articles.articles.length > 0 ) {
           console.log( "Articles received!" );
-          console.dir( in_articles );
-          in_articles.articles[0].forEach( element => {
-            element.key = key_counter;
-            key_counter++;
+          let key_counter = 0;
+          in_articles.articles.forEach( function(article_group,index) {
+            console.dir( article_group );
+            article_group.forEach( article => {
+              article.key = key_counter;
+              key_counter++;
+              articles_component.state.articles.push( article );
+            });
           });
-          articles_component.state.articles = in_articles.articles[0];
           articles_component.setState( articles_component.state.articles );
         } else {
           console.log( "No articles received!" );

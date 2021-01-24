@@ -4,11 +4,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <link rel="stylesheet" href="style.css">
 
-<!--JQuery & slider-->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="script-slider.js"></script>
-<link rel="stylesheet" href="style-slider.css">
-
 <!--Icons-->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -16,10 +11,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 
+
+<!--Babel + React for dev, should be server side for production-->
 <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+<!--My script-->
 <script src="script.js" type="text/babel" defer></script>
+
+<!--JQuery & slider-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="script-slider.js"></script>
+<link rel="stylesheet" href="style-slider.css">
+
 <!--Just for dev, babel should be run server side once and cached, not offloaded whole onto the client. -->
 </head>
 <body>
@@ -71,8 +76,8 @@
   <!--Search interface-->
   <div id="search_interface">
     <div id="date_picker_container">
-      <input type="date" id="start_range" min="2015-06-01" max="2021-01-20">
-      <input type="date" id="end_range" min="2015-06-01" max="2021-01-20">
+      <!--input type="date" id="start_range" min="2015-06-01" max="2021-01-20"-->
+      <!--input type="date" id="end_range" min="2015-06-01" max="2021-01-20"-->
       	  <div class="row">
 	    <div class="col-sm-12">
 	      <div id="slider-range"></div>
