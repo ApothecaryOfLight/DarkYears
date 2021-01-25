@@ -1267,6 +1267,7 @@ $(document).ready(function() {
           if (data.handleNumber !== undefined) {
             fireEvent('end', data.handleNumber);
           }
+          run_search_wrapper(); //Run search on mouse/touch release.
         }
         // Fire 'end' when a mouse or pen leaves the document.
 

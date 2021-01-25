@@ -29,9 +29,16 @@ class UID {
   }
 }
 
+
 /*
-Search Tag Manager
+Search function
 */
+let search_tag_handler;
+let ws_handler;
+function run_search_wrapper() {
+  //console.log( "step1" );
+  run_search( search_tag_handler, ws_handler );
+}
 function run_search( component_handle, ws ) {
   const search_tag_input_field = document.getElementById("search_bar");
 
@@ -56,12 +63,28 @@ function run_search( component_handle, ws ) {
     search_arr.push( search_terms[key].text );
   }
 
-  //5) Convert search term array to object w/ event type and JSONify it.
-  const search_json = JSON.stringify({ event: "search", tags: search_arr });
+  //5) Get the date range values.
+  const start_date = document.getElementById("slider-range-value1").innerHTML;
+  const end_date = document.getElementById("slider-range-value2").innerHTML;
+  console.log( start_date );
+  console.log( end_date );
 
-  //6) Send search query to server.
+  //6) Convert search term array to object w/ event type and JSONify it.
+  const search_json = JSON.stringify({
+    event: "search",
+    tags: search_arr,
+    start_date: start_date,
+    end_date: end_date
+  });
+
+  //7) Send search query to server.
   ws.send( search_json );
 }
+
+
+/*
+Search Tag Manager
+*/
 class SearchTagManager extends React.Component {
   constructor( search_terms, ws ) {
     super( search_terms, ws );
@@ -70,10 +93,15 @@ class SearchTagManager extends React.Component {
   componentDidMount() {
     this.setState( this.state.search_terms );
     const thisHandle = this;
+    search_tag_handler = this;
+    ws_handler = ws;
     const search_tag_container = document.getElementById("tag_container");
     const add_search_term_button = document.getElementById("add_search_tag_button");
     add_search_term_button.addEventListener("click",function() {
       run_search( thisHandle, ws );
+    });
+    ws.addEventListener( 'open', function() {
+      run_search( thisHandle, ws ); //Initial search on load.
     });
   }
   doClick( inUID ) {
@@ -100,6 +128,10 @@ class SearchTagManager extends React.Component {
   }
 }
 
+
+/*
+Article manager.
+*/
 class ArticleManager extends React.Component {
   constructor( articles, ws ) {
     super( articles, ws );
@@ -176,6 +208,10 @@ ws.addEventListener( 'error', function(event) {
   console.groupEnd();
 });
 
+
+/*
+Menu code.
+*/
 const interfaces = [ "search", "create_article", "profile", "settings", "contact" ];
 
 function set_interface( target ) {
@@ -198,6 +234,10 @@ interfaces.forEach( interface_name => {
   });
 });
 
+
+/*
+Search interface code.
+*/
 const myUID = new UID();
 
 const search_terms = [];
@@ -214,6 +254,10 @@ ReactDOM.render(
   document.getElementById('article_container')
 );
 
+
+/*
+Add interface code.
+*/
 const submit_article_button = document.getElementById("submit_article");
 const article_title_input = document.getElementById("create_article_type");
 const article_date_input = document.getElementById("create_article_date");
