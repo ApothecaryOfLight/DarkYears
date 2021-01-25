@@ -39,17 +39,48 @@ function run_search_wrapper() {
   //console.log( "step1" );
   run_search( search_tag_handler, ws_handler );
 }
+
+function distinct( value, index, self ) {
+  return self.indexOf(value) === index;
+}
+
+function do_process_tags( inArticleText ) {
+  let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
+  let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
+  let words = punctuation_removed.split(" ");
+  words = words.filter(distinct);
+  console.log( "UNQ:" + words );
+  let words_arr = [];
+  words.forEach( word => {
+    words_arr.push( word );
+  });
+  return words_arr;
+}
+
+function add_search_terms( in_terms, component_handle, myUID ) {
+  //1) Add the search terms.
+  in_terms.forEach( term => {
+    let duplicate = false;
+    component_handle.state.search_terms.forEach( element => {
+      if( element.text == term ) {
+        duplicate = true;
+      }
+    });
+    if( duplicate == false ) {
+      component_handle.state.search_terms.push({
+        text: term,
+        UID: myUID.generateUID('tags')
+      });
+    }
+  });
+}
 function run_search( component_handle, ws ) {
   const search_tag_input_field = document.getElementById("search_bar");
 
   //1) Add search term to search_tag_container
-  const new_tag = search_tag_input_field.value;
-  if( new_tag != "" ) {
-    component_handle.state.search_terms.push({
-      text: search_tag_input_field.value,
-      UID : myUID.generateUID('tags')
-    });
-  }
+  if( search_tag_input_field.value == "" ) { return; }
+  const tags = do_process_tags( search_tag_input_field.value );
+  add_search_terms( tags, component_handle, myUID );
 
   //2) Update react component to display the state change to the user
   component_handle.setState( component_handle.state.search_terms );
