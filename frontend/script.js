@@ -8,7 +8,7 @@ class UID {
     this.UIDs = [];
   }
   generateUID( inField ) {
-    console.log( "Generating first UID of field " + inField + "." );
+    //console.log( "Generating first UID of field " + inField + "." );
     if( !this.UIDs[inField] ) {
       this.UIDs[inField] = {
       counter: 1,
@@ -16,15 +16,15 @@ class UID {
       };
       return 0;
     } else if( this.UIDs[inField].retiredIDs.length ) {
-      console.log( "Issuing retired UID of field " + inField + "." );
+      //console.log( "Issuing retired UID of field " + inField + "." );
       return this.UIDs[inField].retiredIDs.pop();
     } else {
-      console.log( "Generating new UID of field " + inField + "." );
+      //console.log( "Generating new UID of field " + inField + "." );
       return this.UIDs[inField].counter++;
     }
   }
   retireUID( inField, inUID ) {
-    console.log( "reitiring UID " + inUID + " of " + inField );
+    //console.log( "reitiring UID " + inUID + " of " + inField );
     this.UIDs[inField].retiredIDs.push( inUID );
   }
 }
@@ -33,7 +33,6 @@ class UID {
 Search Tag Manager
 */
 function run_search( component_handle, ws ) {
-  console.log( "Running search..." );
   const search_tag_input_field = document.getElementById("search_bar");
 
   //1) Add search term to search_tag_container
@@ -51,19 +50,16 @@ function run_search( component_handle, ws ) {
   //3) Empty input field
   search_tag_input_field.value = "";
 
-  //Convert search terms from DOM appropriate format to array
+  //4) Convert search terms from DOM appropriate format to array
   const search_arr = [];
-  //console.dir( search_terms );
   for( const key in search_terms ) {
     search_arr.push( search_terms[key].text );
   }
 
-  //console.log( search_arr );
-
-  //Convert search term array to object w/ event type and JSONify it.
+  //5) Convert search term array to object w/ event type and JSONify it.
   const search_json = JSON.stringify({ event: "search", tags: search_arr });
 
-  //Send search query to server.
+  //6) Send search query to server.
   ws.send( search_json );
 }
 class SearchTagManager extends React.Component {
@@ -76,16 +72,11 @@ class SearchTagManager extends React.Component {
     const thisHandle = this;
     const search_tag_container = document.getElementById("tag_container");
     const add_search_term_button = document.getElementById("add_search_tag_button");
-    //console.log( run_search );
     add_search_term_button.addEventListener("click",function() {
-      //console.dir( thisHandle );
-      //console.dir( parent );
       run_search( thisHandle, ws );
     });
   }
   doClick( inUID ) {
-    console.log("Deleting tag..." );
-    //console.dir( inUID );
     search_terms.forEach( (search_term, index) => {
       if( search_term.UID == inUID ) {
         search_terms.splice( index, 1 );
@@ -96,12 +87,15 @@ class SearchTagManager extends React.Component {
     run_search( this, ws );
   }
   render() {
-    const search_tags_element = this.state.search_terms.map( (search_term) =>
+    let search_tags_element = this.state.search_terms.map( (search_term) =>
       <span className='tag' key={search_term.UID}>{search_term.text}
         <button className='close_tag' 
           onClick={ () => this.doClick(search_term.UID) }>X</button>
       </span>
     );
+    if( this.state.search_terms.length == 0 ) {
+      search_tags_element = <div className='empty_tags_container'></div>
+    }
     return( search_tags_element );
   }
 }
@@ -115,17 +109,13 @@ class ArticleManager extends React.Component {
     this.setState( this.state.articles );
     const articles_component = this;
     ws.addEventListener( 'message', function(event) {
-      //console.log( event.data );
       articles_component.state.articles = [];
       articles_component.setState( [] );
       const in_articles = JSON.parse( event.data );
       if( in_articles.type == "articles" ) {
-        console.log( in_articles.articles.length );
         if( in_articles.articles.length > 0 ) {
-          console.log( "Articles received!" );
           let key_counter = 0;
           in_articles.articles.forEach( function(article_group,index) {
-            console.dir( article_group );
             article_group.forEach( article => {
               article.key = key_counter;
               key_counter++;
@@ -134,25 +124,19 @@ class ArticleManager extends React.Component {
           });
           articles_component.setState( articles_component.state.articles );
         } else {
-          console.log( "No articles received!" );
           articles_component.state.articles = [];
-          //console.log( "Length: " + articles_component.state.articles.length );
           articles_component.setState( [] );
         }
       }
     });
   }
   render() {
-    console.log( "Rendering!" );
-    //console.dir( this );
-    //console.log( typeof( this.state.articles ) );
-    //console.dir( "Articles: " + this.state.articles.length );
+    //console.log( "Rendering!" );
     if( this.state.articles.length == 0 ) {
-      console.log( "Returned empty" );
-      const empty_return = <div className='article'>Search Returned Nothing!</div>;
+      //console.log( "Returned empty" );
+      const empty_return = <div className='empty_articles_container'></div>;
       return( empty_return );
     }
-    //console.dir( this.state.articles.map );
     const dom = this.state.articles.map( (article) =>
       <div className='article' key={article.key}>
         <div className='article_top'>
@@ -162,7 +146,6 @@ class ArticleManager extends React.Component {
         <div className='article_text'>{article.article_text}</div>
       </div>
     );
-    //console.log( dom );
     return(
       dom
     );
@@ -215,33 +198,9 @@ interfaces.forEach( interface_name => {
   });
 });
 
-/*  const search_interface_button = document.getElementById("search_interface_button");
-  const create_article_interface_button = document.getElementById("create_article_interface_button");
-  const profile_interface_button = document.getElementById("profile_interface_button");
-  const settings_interface_button = document.getElementById("settings_interface_button");
-  const contact_interface_button = document.getElementById("contact_interface_button");
-
-search_interface_button.addEventListener("click",function(){
-  search_interface.style.display = "grid";
-  create_article_interface.style.display = "none";
-});
-create_article_interface_button.addEventListener("click",function(){
-  search_interface.style.display = "none";
-  create_article_interface.style.display = "grid";
-});*/
-
 const myUID = new UID();
 
-const search_terms = [
-  {
-    text : "tag1",
-    UID : myUID.generateUID('tags')
-  },
-  {
-    text : "tag2",
-    UID : myUID.generateUID('tags')
-  }
-];
+const search_terms = [];
 
 const articles = [];
 

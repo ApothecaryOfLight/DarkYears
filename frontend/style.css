@@ -190,6 +190,11 @@ body {
   border: 0;
   background-color: white;
 }
+.empty_tags_container {
+  padding: 30px;
+}
+
+
 
 #article_container {
   grid-column-start: 2;
@@ -225,4 +230,7 @@ body {
 }
 .article_text {
   margin: 2%;
+}
+.empty_articles_container {
+  padding: 50px;
 }
