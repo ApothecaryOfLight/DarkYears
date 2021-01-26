@@ -15,7 +15,8 @@ async function init_mysql_pool() {
     host: 'localhost',
     user: 'DarkYears_User',
     password: 'DarkYears_Password',
-    database: 'DarkYearsDB'
+    database: 'DarkYearsDB',
+    dateStrings: true
   });
   mysql_promisepool = mysql_pool.promise();
   //do_test();
@@ -73,13 +74,23 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   let new_id = article_id_rows[0]['DarkYearsDB.generate_new_id()'];
   console.log( "new_ID: " + new_id );
 
+//) Convert date into mySQL DATE format (mm-dd-yyyy) -> (yyyy-mm-dd)
+  console.log( "DATE:" );
+  console.table( inArticleDate );
+  const year = inArticleDate.substr(0,4);
+  const month = inArticleDate.substr( 5,2 );
+  const day = inArticleDate.substr( 8,2 );
+  const formatted_date = year + "-" + month + "-" + day;
+  console.log( "formatted date: " + formatted_date );
+
 //2) Add article_id, title and text to articles table.
   const [rows,fields] = await mysql_promisepool.query(
-    "INSERT INTO articles ( article_id, article_title, article_text ) " +
+    "INSERT INTO articles ( article_id, article_title, article_text, article_date ) " +
     "VALUES (" +
     "" + new_id + "," +
     "\'" + inArticleTitle + "\'," +
-    "\'" + inArticleText + "\'" +
+    "\'" + inArticleText + "\'," +
+    "\'" + formatted_date + "\' " +
     ");"
   );
   console.log( rows, fields );
@@ -88,11 +99,6 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   let WordsArray = do_process_article_text( inArticleText + " " + inArticleTitle );
 
 //4) Process date into calendar table
-  console.log( "DATE:" );
-  console.table( inArticleDate );
-  const year = inArticleDate.substr(0,4);
-  const month = inArticleDate.substr( 5,2 );
-  const day = inArticleDate.substr( 8,2 );
   const date_table_name = "calendar_" + year + "_" + month;
   console.log( date_table_name );
 
@@ -249,12 +255,15 @@ async function search( inWords, date_start, date_end, conn ) {
       word + "\' " +
       ";";*/
     let query_text = "SELECT " +
-      "words.article_id, words.article_title, words.article_text FROM ( SELECT " +
+      "words.article_id, words.article_title, " +
+      "words.article_text, words.article_date " +
+      "FROM ( SELECT " +
       table_name + ".word, " +
       table_name + ".article_id_fk, " +
       table_name + ".article_title, " +
       "articles.article_id, " +
-      "articles.article_text " +
+      "articles.article_text, " +
+      "articles.article_date " + 
       "FROM " + table_name + " " +
       "INNER JOIN articles ON " +
       table_name + ".article_id_fk = articles.article_id " +
@@ -318,7 +327,7 @@ async function date_search( date_start, date_end, conn ) {
   console.log( "\n\n" );
 
   let query_text = "SELECT " +
-    "articles.article_title, articles.article_text " +
+    "articles.article_title, articles.article_text, articles.article_date " +
     "FROM articles " +
     "WHERE articles.article_id" + calendar_query;
   console.log( query_text );

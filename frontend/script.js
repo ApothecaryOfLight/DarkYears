@@ -242,7 +242,7 @@ class ArticleManager extends React.Component {
       <div className='article' key={article.key}>
         <div className='article_top'>
           <span className='article_title'>{article.article_title}</span>
-          <span className='article_date'>10/10/2020</span>
+          <span className='article_date'>{article.article_date}</span>
         </div>
         <div className='article_text'>{article.article_text}</div>
       </div>

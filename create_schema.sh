@@ -5,7 +5,7 @@ echo "DROP DATABASE IF EXISTS DarkYearsDB;" >> "create_schema.sql"
 echo "CREATE DATABASE IF NOT EXISTS DarkYearsDB;" >> "create_schema.sql"
 echo "USE DarkYearsDB;" >> "create_schema.sql"
 
-echo "CREATE TABLE articles( article_title VARCHAR(150), article_id INT PRIMARY KEY, article_text LONGTEXT );" >> "create_schema.sql"
+echo "CREATE TABLE articles( article_title VARCHAR(150), article_id INT PRIMARY KEY, article_text LONGTEXT, article_date DATE );" >> "create_schema.sql"
 
 #Make month tables for temporal searches
 YEAR=2015
