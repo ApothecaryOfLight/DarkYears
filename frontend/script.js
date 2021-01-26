@@ -74,6 +74,18 @@ function add_search_terms( in_terms, component_handle, myUID ) {
     }
   });
 }
+function format_date( inDate ) {
+  //inDate = inDate.replace( '/', '-' );
+  const date_obj = inDate.split( '/' );
+  let day = date_obj[0];
+  let month = date_obj[1];
+  let year = date_obj[2];
+  if( day < 10 ) { day = "0" + day; }
+  if( month < 10 ) { month = "0" + month; }
+  const return_date = day + "-" + month + "-" + year;
+  console.log( return_date );
+  return return_date;
+}
 function run_search( component_handle, ws ) {
   const search_tag_input_field = document.getElementById("search_bar");
 
@@ -95,10 +107,16 @@ function run_search( component_handle, ws ) {
   }
 
   //5) Get the date range values.
-  const start_date = document.getElementById("slider-range-value1").innerHTML;
-  const end_date = document.getElementById("slider-range-value2").innerHTML;
+  let start_date = document.getElementById("slider-range-value1").innerHTML;
+  let end_date = document.getElementById("slider-range-value2").innerHTML;
+  /*start_date = start_date.replace( '/', '-' );
+  end_date = end_date.replace( '/', '-' );
+  start_date = start_date.replace( '/', '-' );
+  end_date = end_date.replace( '/', '-' );
   console.log( start_date );
-  console.log( end_date );
+  console.log( end_date );*/
+  start_date = format_date( start_date );
+  end_date = format_date( end_date );
 
   //6) Convert search term array to object w/ event type and JSONify it.
   const search_json = JSON.stringify({
@@ -287,7 +305,7 @@ ReactDOM.render(
 
 
 /*
-Add interface code.
+Add article interface code.
 */
 const submit_article_button = document.getElementById("submit_article");
 const article_title_input = document.getElementById("create_article_type");

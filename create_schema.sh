@@ -10,10 +10,16 @@ echo "CREATE TABLE articles( article_title VARCHAR(150), article_id INT PRIMARY 
 #Make month tables for temporal searches
 YEAR=2015
 MONTH=1
+ZERO=0
 while [ $YEAR -lt 2022 ]; do
   let MONTH=1
   while [ $MONTH -lt 13 ]; do
-    echo "CREATE TABLE calendar_"$YEAR"_"$MONTH " ( day INT, article_id_fk INT, article_title VARCHAR(150), FOREIGN KEY (article_id_fk) REFERENCES articles(article_id) ON DELETE CASCADE ); " >> "create_schema.sql"
+    if [ $MONTH -lt 10 ]; then
+      ZERO=0
+    else
+      ZERO=""
+    fi
+    echo "CREATE TABLE calendar_"$YEAR"_"$ZERO$MONTH " ( day INT, article_id_fk INT, article_title VARCHAR(150), FOREIGN KEY (article_id_fk) REFERENCES articles(article_id) ON DELETE CASCADE ); " >> "create_schema.sql"
     let MONTH=MONTH+1
   done
   let YEAR=YEAR+1
