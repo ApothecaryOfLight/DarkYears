@@ -36,7 +36,7 @@ Search function
 let search_tag_handler;
 let ws_handler;
 function run_search_wrapper() {
-  //console.log( "step1" );
+  console.log( "step1" );
   run_search( search_tag_handler, ws_handler );
 }
 
@@ -45,10 +45,14 @@ function distinct( value, index, self ) {
 }
 
 function do_process_tags( inArticleText ) {
+console.log( "do_process_tags" );
+console.log( inArticleText );
   let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
   let words = punctuation_removed.split(" ");
+console.dir( words );
   words = words.filter(distinct);
+console.dir( words );
   console.log( "UNQ:" + words );
   let words_arr = [];
   words.forEach( word => {
@@ -59,6 +63,9 @@ function do_process_tags( inArticleText ) {
 
 function add_search_terms( in_terms, component_handle, myUID ) {
   //1) Add the search terms.
+console.log( "add_search_terms" );
+console.dir( in_terms );
+  if( in_terms.length == 0 ) { return; }
   in_terms.forEach( term => {
     let duplicate = false;
     component_handle.state.search_terms.forEach( element => {
@@ -87,23 +94,27 @@ function format_date( inDate ) {
   return return_date;
 }
 function run_search( component_handle, ws ) {
+  console.log( "run_search" );
   const search_tag_input_field = document.getElementById("search_bar");
-
-  //1) Add search term to search_tag_container
-  if( search_tag_input_field.value == "" ) { return; }
-  const tags = do_process_tags( search_tag_input_field.value );
-  add_search_terms( tags, component_handle, myUID );
-
-  //2) Update react component to display the state change to the user
-  component_handle.setState( component_handle.state.search_terms );
-
-  //3) Empty input field
-  search_tag_input_field.value = "";
-
-  //4) Convert search terms from DOM appropriate format to array
   const search_arr = [];
-  for( const key in search_terms ) {
-    search_arr.push( search_terms[key].text );
+  //1) Add search term to search_tag_container
+  //if( search_tag_input_field.value == "" ) { return; }
+console.log( search_tag_input_field.value );
+  if( search_tag_input_field.value != "" ) {
+    const tags = do_process_tags( search_tag_input_field.value );
+    add_search_terms( tags, component_handle, myUID );
+
+    //2) Update react component to display the state change to the user
+    component_handle.setState( component_handle.state.search_terms );
+    //console.dir( component_handle.state.search_terms );
+    //3) Empty input field
+    search_tag_input_field.value = "";
+
+    //4) Convert search terms from DOM appropriate format to array
+    //const search_arr = [];
+    for( const key in search_terms ) {
+      search_arr.push( search_terms[key].text );
+    }
   }
 
   //5) Get the date range values.
@@ -118,9 +129,18 @@ function run_search( component_handle, ws ) {
   start_date = format_date( start_date );
   end_date = format_date( end_date );
 
+  console.log( search_arr.length );
+
+  let event_type = "search_request_error";
+  if( search_arr.length == 0 ) {
+    event_type = "date_search";
+  } else if( search_arr.length > 0 ) {
+    event_type = "search";
+  }
+
   //6) Convert search term array to object w/ event type and JSONify it.
   const search_json = JSON.stringify({
-    event: "search",
+    event: event_type,
     tags: search_arr,
     start_date: start_date,
     end_date: end_date
