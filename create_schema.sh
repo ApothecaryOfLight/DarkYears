@@ -1,5 +1,5 @@
 #!/bin/bash
-rm create_schema.sql
+rm -f create_schema.sql
 
 echo "DROP DATABASE IF EXISTS DarkYearsDB;" >> "create_schema.sql"
 echo "CREATE DATABASE IF NOT EXISTS DarkYearsDB;" >> "create_schema.sql"
@@ -40,7 +40,7 @@ echo "INSERT INTO sequence_last (last) VALUES (0);" >> create_schema.sql
 echo "CREATE USER IF NOT EXISTS 'DarkYears_User'@'localhost' IDENTIFIED BY 'DarkYears_Password';" >> "create_schema.sql"
 echo "GRANT ALL ON DarkYearsDB.* TO 'DarkYears_User'@'localhost'" >> create_schema.sql
 
-rm create_schema_function.sql
+rm -f create_schema_function.sql
 echo "DELIMITER %%" >> create_schema_function.sql
 echo "CREATE FUNCTION DarkYearsDB.generate_new_id()" >> create_schema_function.sql
 echo "RETURNS BIGINT" >> create_schema_function.sql
@@ -60,3 +60,7 @@ echo "RETURN @NewID;" >> create_schema_function.sql
 echo "END" >> create_schema_function.sql
 echo "%%" >> create_schema_function.sql
 echo "DELIMITER ;" >> create_schema_function.sql
+
+rm -f create_users_schema.sql
+echo "USE DarkYearsDB;" >> "create_users_schema.sql"
+echo "CREATE TABLE users( username VARCHAR(150), username_hash BINARY(16), password_hash BINARY(16), user_settings TEXT, PRIMARY KEY(username_hash) );" >> "create_users_schema.sql"

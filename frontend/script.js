@@ -348,3 +348,28 @@ submit_article_button.addEventListener("click", function() {
   const article_json = JSON.stringify({event: "new_article", article: article_obj});
   ws.send( article_json );
 });
+
+
+/*
+Modal interfaces code.
+*/
+/*
+Login Interface Code
+*/
+const login_button = document.getElementById("logging_element");
+const modal_interface = document.getElementById("modal_interface");
+const login_modal = document.getElementById("login_modal");
+const close_login_modal_button = document.getElementById("close_login_modal_button");
+login_button.addEventListener( 'click', function() {
+  modal_interface.style.display = 'flex';
+  login_modal.style.display = 'flex';
+});
+close_login_modal_button.addEventListener( 'click', function() {
+  modal_interface.style.display = 'none';
+  login_modal.style.display = 'none';
+});
+
+
+/*
+Error interface code
+*/
