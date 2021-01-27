@@ -369,7 +369,7 @@ async function date_search( date_start, date_end, conn ) {
 
   let start_date = date_start;
   let end_date = date_end;
-  console.log( start_date + " / " + end_date );
+  //console.log( start_date + " / " + end_date );
   let start_year = start_date.substr(6,4);
   let start_month = Number(start_date.substr(0,2));
   let start_day = start_date.substr(3,2);
@@ -377,12 +377,13 @@ async function date_search( date_start, date_end, conn ) {
   let end_year = end_date.substr(6,4);
   let end_month = Number(end_date.substr(0,2));
   let end_day = end_date.substr(3,2);
-  console.log( start_year + "/" + start_month + " to " + end_year + "/" + end_month );
+  //console.log( start_year + "/" + start_month + " to " + end_year + "/" + end_month );
 
   let month_counter = start_month;
   let year_counter = start_year;
   let calendar_query = " = ANY ( ";
-  while( month_counter <= end_month || year_counter < end_year ) {
+
+  while( month_counter < end_month || year_counter < end_year ) {
     let month_counter_string = "";
     if( month_counter < 10 ) { month_counter_string += "0"; }
     month_counter_string += month_counter;
@@ -398,14 +399,14 @@ async function date_search( date_start, date_end, conn ) {
 
   calendar_query = calendar_query.substring( 0, calendar_query.length - 6 );
   calendar_query += ");";
-  console.log( calendar_query );
-  console.log( "\n\n" );
+  //console.log( calendar_query );
+  //console.log( "\n\n" );
 
   let query_text = "SELECT " +
     "articles.article_title, articles.article_text, articles.article_date " +
     "FROM articles " +
     "WHERE articles.article_id" + calendar_query;
-  console.log( query_text );
+  //console.log( query_text );
   const [word_rows,word_fields] = await mysql_promisepool.query(
     query_text
   );
