@@ -157,6 +157,69 @@ async function main() {
   var doneC = await initialize_websockets();
 }
 
+async function attempt_login( conn, username, username_hash, password_hash ) {
+  console.log( "Attempting to login!" );
+  const query_text = "SELECT username, password_hash " +
+    "FROM users " +
+    "WHERE username_hash = " + "\'" + username_hash + "\';";
+  try {
+    const [login_rows,login_fields] = await mysql_promisepool.query( query_text );
+    //console.dir( login_rows );
+    //console.log( login_rows[0] );
+    //console.log( login_rows[0].username );
+    const data_pass = String.fromCharCode.apply(null,login_rows[0].password_hash);
+    if( data_pass == password_hash ) {
+      console.log( "Credentials validated!" );
+      conn.send( JSON.stringify({
+        event: 'login_approved'
+      }));
+    } else if( data_pass != password_hash ) {
+      console.log( "Credentials rejected!" );
+      conn.send( JSON.stringify({
+        event: 'password_rejected'
+      }));
+    }
+    //console.log( password_hash );
+  } catch(e) {
+    console.dir( e );
+    console.log( "Error!" );
+    conn.send( JSON.stingify({
+      event: 'Unspecified error, please report to dev.'
+    }));
+  }
+}
+
+async function attempt_create_account( conn, username, username_hash, password_hash ) {
+  console.log( "Attempting to create account!" );
+  const query_text = "INSERT INTO " +
+    "users ( username, username_hash, password_hash ) " +
+    "VALUES ( " +
+    "\'" + username + "\', " +
+    "\'" + username_hash + "\', " +
+    "\'" + password_hash + "\'" +
+    ");";
+  console.log( query_text );
+  try {
+    const [acct_rows,acct_fields] = await mysql_promisepool.query( query_text );
+    console.dir( acct_rows );
+    console.log( acct_rows.affectedRows );
+    if( acct_rows.affectedRows == 1 ) {
+      conn.send( JSON.stringify({
+        event: 'account_creation_success'
+      }));
+    }
+    //console.dir( acct_fields );
+  } catch(e) {
+    console.dir(e);
+    if( e.code == 'ER_DUP_ENTRY' ) {
+      console.log( "Username already exists!" );
+      conn.send( JSON.stringify({
+        event: 'account_creation_failed_username_exists'
+      }));
+    }
+  }
+}
+
 async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
     var conn = request.accept( null, request.origin );
@@ -184,11 +247,23 @@ async function initialize_websockets() {
         const date_start = inMessage.start_date;
         const date_end = inMessage.end_date;
         date_search( date_start, date_end, conn );
+      } else if( inMessage.event == "login" ) {
+        console.dir( inMessage );
+        attempt_login(
+          conn,
+          inMessage.username_plaintext,
+          inMessage.username_hashed,
+          inMessage.password_hashed
+        );
+      } else if( inMessage.event == "create_account" ) {
+        console.dir( inMessage );
+        attempt_create_account(
+          conn,
+          inMessage.username_plaintext,
+          inMessage.username_hashed,
+          inMessage.password_hashed
+        );
       }
-      //If add article, index article into database.
-      
-      //If requesting article, return article from database.
-      
     });
   });
   console.log( "Websockets initialized." );

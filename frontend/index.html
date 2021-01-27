@@ -17,6 +17,9 @@
 <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
+<!--MD5 implementation from blueimp over at Github-->
+<script src="blueimp_md5.min.js"></script>
+
 <!--My script-->
 <script src="script.js" type="text/babel" defer></script>
 
@@ -24,6 +27,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="script-slider.js"></script>
 <link rel="stylesheet" href="style-slider.css">
+
 
 <!--Just for dev, babel should be run server side once and cached, not offloaded whole onto the client. -->
 </head>
@@ -61,9 +65,10 @@
       </div>
     </span>
     <!--span id="logging_container"-->
-      <span id="logging_element" class="button">
-        Login
-      </span>
+      <!--span id="logging_element" class="button"-->
+        <span id="logging_element_login">Login</span>
+        <span id="logging_element_logout">Logout</span>
+      <!--/span-->
     <!--/span-->
   </div>
 

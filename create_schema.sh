@@ -63,4 +63,6 @@ echo "DELIMITER ;" >> create_schema_function.sql
 
 rm -f create_users_schema.sql
 echo "USE DarkYearsDB;" >> "create_users_schema.sql"
-echo "CREATE TABLE users( username VARCHAR(150), username_hash BINARY(16), password_hash BINARY(16), user_settings TEXT, PRIMARY KEY(username_hash) );" >> "create_users_schema.sql"
+echo "CREATE TABLE users( username VARCHAR(150), username_hash VARBINARY(64), password_hash VARBINARY(64), user_settings TEXT, PRIMARY KEY(username_hash) );" >> "create_users_schema.sql"
+
+echo "All done!"

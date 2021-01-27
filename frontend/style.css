@@ -1,4 +1,6 @@
-/*Menu*/
+/*
+Menu
+*/
 body {
   margin: 0px;
   padding: 0px;
@@ -26,6 +28,15 @@ body {
   background-color: white;
 
   z-index: 10000;
+}
+#create_article_interface_button {
+  display: none;
+}
+#profile_interface_button {
+  display: none;
+}
+#settings_interface_button {
+  display: none;
 }
 
 #buttons_bar {
@@ -59,21 +70,32 @@ body {
 }
 
 #logging_element {
+}
+#logging_element:hover {
+
+}
+#logging_element_login {
   align-self: center;
   border-radius: 5px;
   padding: 2%;
 }
-#logging_element:hover {
+#logging_element_login:hover {
+  background-color: #24a0ed40;
+}
+#logging_element_logout {
+  align-self: center;
+  border-radius: 5px;
+  padding: 2%;
+  display: none;
+}
+#logging_element_logout:hover {
   background-color: #24a0ed40;
 }
 
 
-
-/*Modal interface*/
-
-
-
-/*Search interface*/
+/*
+Search interface
+*/
 #search_interface {
   display: grid;
   grid-template-rows: auto auto auto auto auto auto;
@@ -260,15 +282,14 @@ Modals
 
   flex-direction: column;
 
-  border: 2px solid blue;
+  border: 2px solid #0a2458;
   border-radius: 16px;
 }
 
 #login_modal_top {
   display: grid;
-  grid-template-columns: 10% 80% 10%;
+  grid-template-columns: 25% 50% 25%;
   grid-template-rows: auto;
-  margin-top: 2em;
 }
 #login_modal_title {
   text-align: center;
@@ -277,19 +298,26 @@ Modals
   grid-row: 1;
   font-weight: bold;
   font-size: 26px;
+  margin-top: 2em;
 }
 #close_login_modal_button {
   float: right;
   grid-column: 3;
   grid-row: 1;
   float: right;
-  width: 3em;
+  width: 100%;
   height: 3em;
 
-  background-color: white;
+  background-color: #00000000;
   border: none;
   color: black;
-  margin-top: -2em;
+
+  padding-right: 1em;
+
+  text-align: right;
+
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
 #login_modal_mid {
@@ -347,4 +375,26 @@ Modals
 
 #error_modal {
   display: none;
+  z-index: 10002;
+  position: fixed;
+  background-color: white;
+  border: 6px solid red;/*#0a2458;*/
+  border-radius: 16px;
+  justify-content: space-around;
+  flex-direction: column;
+  width: 40vw;
+  height: 20vw;
+}
+#error_message {
+  text-align: center;
+  margin-top: 2em;
+  font-size: 2em;
+}
+#close_error_modal_button {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  width: 40%;
+  height: 3em;
+  align-self: center;
+  text-align: center;
 }

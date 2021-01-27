@@ -36,7 +36,7 @@ Search function
 let search_tag_handler;
 let ws_handler;
 function run_search_wrapper() {
-  console.log( "step1" );
+  //console.log( "step1" );
   run_search( search_tag_handler, ws_handler );
 }
 
@@ -45,15 +45,15 @@ function distinct( value, index, self ) {
 }
 
 function do_process_tags( inArticleText ) {
-console.log( "do_process_tags" );
-console.log( inArticleText );
+//console.log( "do_process_tags" );
+//console.log( inArticleText );
   let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
   let words = punctuation_removed.split(" ");
-console.dir( words );
+//console.dir( words );
   words = words.filter(distinct);
-console.dir( words );
-  console.log( "UNQ:" + words );
+//console.dir( words );
+  //console.log( "UNQ:" + words );
   let words_arr = [];
   words.forEach( word => {
     words_arr.push( word );
@@ -63,8 +63,8 @@ console.dir( words );
 
 function add_search_terms( in_terms, component_handle, myUID ) {
   //1) Add the search terms.
-console.log( "add_search_terms" );
-console.dir( in_terms );
+//console.log( "add_search_terms" );
+//console.dir( in_terms );
   if( in_terms.length == 0 ) { return; }
   in_terms.forEach( term => {
     let duplicate = false;
@@ -90,16 +90,16 @@ function format_date( inDate ) {
   if( day < 10 ) { day = "0" + day; }
   if( month < 10 ) { month = "0" + month; }
   const return_date = day + "-" + month + "-" + year;
-  console.log( return_date );
+  //console.log( return_date );
   return return_date;
 }
 function run_search( component_handle, ws ) {
-  console.log( "run_search" );
+  //console.log( "run_search" );
   const search_tag_input_field = document.getElementById("search_bar");
   const search_arr = [];
   //1) Add search term to search_tag_container
   //if( search_tag_input_field.value == "" ) { return; }
-console.log( search_tag_input_field.value );
+//console.log( search_tag_input_field.value );
   if( search_tag_input_field.value != "" ) {
     const tags = do_process_tags( search_tag_input_field.value );
     add_search_terms( tags, component_handle, myUID );
@@ -129,7 +129,7 @@ console.log( search_tag_input_field.value );
   start_date = format_date( start_date );
   end_date = format_date( end_date );
 
-  console.log( search_arr.length );
+  //console.log( search_arr.length );
 
   let event_type = "search_request_error";
   if( search_arr.length == 0 ) {
@@ -337,6 +337,7 @@ submit_article_button.addEventListener("click", function() {
   const article_date = article_date_input.value;
   if( article_title == "" || article_body == "" || article_date == "" ) {
     console.log( "Missing article part." );
+    //TODO: Error modal
     return;
   }
   const article_obj = {
@@ -344,7 +345,7 @@ submit_article_button.addEventListener("click", function() {
     date: article_date,
     body: article_body
   }
-  console.dir( article_obj );
+  //console.dir( article_obj );
   const article_json = JSON.stringify({event: "new_article", article: article_obj});
   ws.send( article_json );
 });
@@ -356,20 +357,113 @@ Modal interfaces code.
 /*
 Login Interface Code
 */
-const login_button = document.getElementById("logging_element");
-const modal_interface = document.getElementById("modal_interface");
-const login_modal = document.getElementById("login_modal");
-const close_login_modal_button = document.getElementById("close_login_modal_button");
-login_button.addEventListener( 'click', function() {
-  modal_interface.style.display = 'flex';
-  login_modal.style.display = 'flex';
-});
-close_login_modal_button.addEventListener( 'click', function() {
-  modal_interface.style.display = 'none';
-  login_modal.style.display = 'none';
+ws.addEventListener( 'open', function() {
+  const login_button = document.getElementById("logging_element_login");
+  const logout_button = document.getElementById("logging_element_logout");
+
+  const modal_interface = document.getElementById("modal_interface");
+
+  const login_modal = document.getElementById("login_modal");
+  const close_login_modal_button = document.getElementById("close_login_modal_button");
+  login_button.addEventListener( 'click', function() {
+    modal_interface.style.display = 'flex';
+    login_modal.style.display = 'flex';
+  });
+  close_login_modal_button.addEventListener( 'click', function() {
+    modal_interface.style.display = 'none';
+    login_modal.style.display = 'none';
+  });
+
+  const login_attempt_button = document.getElementById("login_button");
+  const create_account_button = document.getElementById("create_account_button");
+  const username_field = document.getElementById("username_input");
+  const password_field = document.getElementById("password_input");
+  login_attempt_button.addEventListener( 'click', function() {
+//    console.log( "Logging!" );
+    const username_plaintext = username_field.value;
+    const password_plaintext = password_field.value;
+//    console.log( username_plaintext + "/" + password_plaintext );
+
+    const hashed_username = md5(username_plaintext);
+//    console.log( "hashed username: " + hashed_username );
+
+    const hashed_password = md5(password_plaintext);
+//    console.log( "hashed password: " + hashed_password );
+
+    ws.send( JSON.stringify({
+      event: 'login',
+      username_plaintext: username_plaintext,
+      username_hashed: hashed_username,
+      password_hashed: hashed_password
+    }));
+  });
+
+  create_account_button.addEventListener( 'click', function() {
+//    console.log( "Creating account!" );
+    const username_plaintext = username_field.value;
+    const password_plaintext = password_field.value;
+//    console.log( username_plaintext + "/" + password_plaintext );
+    const hashed_username = md5(username_plaintext);
+//    console.log( hashed_username );
+    const hashed_password = md5(password_plaintext);
+    ws.send( JSON.stringify({
+      event: 'create_account',
+      username_plaintext: username_plaintext,
+      username_hashed: hashed_username,
+      password_hashed: hashed_password
+    }));
+  });
+
+  const create_article_interface_button = document.getElementById("create_article_interface_button");
+  const profile_interface_button = document.getElementById("profile_interface_button");
+  const settings_interface_button = document.getElementById("settings_interface_button");
+
+  logout_button.addEventListener( 'click', function() {
+    console.log( "Loggin out." );
+    login_button.style.display = "block";
+    logout_button.style.display = "none";
+    create_article_interface_button.style.display = "none";
+    profile_interface_button.style.display = "none";
+    settings_interface_button.style.display = "none";
+  });
+
+  ws.addEventListener( 'message', function(message) {
+    const payload = JSON.parse( message.data );
+    if( payload.event == "login_approved" ) {
+      console.log( "Login approved!" );
+      modal_interface.style.display = "none";
+      login_modal.style.display = "none";
+      login_button.style.display = "none";
+      logout_button.style.display = "block";
+      create_article_interface_button.style.display = "block";
+      profile_interface_button.style.display = "block";
+      settings_interface_button.style.display = "block";
+    } else if( payload.event == "password_rejected" ) {
+      console.log( "Password rejected." );
+      launch_error_modal( "Incorrect login information." );
+    } else if( payload.event == "unknown_login_error" ) {
+      console.log( "Unknown login error." );
+      launch_error_modal( "Unknown login error, contact dev!" );
+    } else if( payload.event == "account_creation_success" ) {
+      console.log( "Account creation success." );
+    } else if( payload.event == "account_creation_failed_username_exists" ) {
+      console.log( "Account creation failed, username exists!" );
+      launch_error_modal( "Username already taken!" );
+    }
+  });
 });
 
 
 /*
 Error interface code
 */
+const error_modal = document.getElementById("error_modal");
+const error_modal_message = document.getElementById("error_message");
+function launch_error_modal( ErrorMessage ) {
+  error_modal.style.display = "flex";
+  error_modal_message.innerHTML = ErrorMessage;
+}
+const close_error_modal = document.getElementById("close_error_modal_button");
+close_error_modal.addEventListener( 'click', function() {
+  error_modal.style.display = "none";
+});
