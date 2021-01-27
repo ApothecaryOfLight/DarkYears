@@ -1,4 +1,11 @@
 /*
+Disable text selection
+*/
+*{
+  cursor: default;
+}
+
+/*
 Menu
 */
 body {
@@ -373,6 +380,10 @@ Modals
   font-weight: bold;
 }
 
+
+/*
+Error modal
+*/
 #error_modal {
   display: none;
   z-index: 10002;
@@ -383,7 +394,7 @@ Modals
   justify-content: space-around;
   flex-direction: column;
   width: 40vw;
-  height: 20vw;
+  height: 30vh;
 }
 #error_message {
   text-align: center;
@@ -393,7 +404,7 @@ Modals
 #close_error_modal_button {
   margin-top: 1em;
   margin-bottom: 1em;
-  width: 40%;
+  width: 16;
   height: 3em;
   align-self: center;
   text-align: center;
