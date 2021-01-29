@@ -152,6 +152,7 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
       conn.send( JSON.stringify({
         event: 'login_approved'
       }));
+      conn.user_data.logged = true;
     } else if( data_pass != password_hash ) {
       console.log( "Credentials rejected!" );
       conn.send( JSON.stringify({
@@ -183,8 +184,9 @@ async function attempt_create_account( conn, username, username_hash, password_h
     console.log( acct_rows.affectedRows );
     if( acct_rows.affectedRows == 1 ) {
       conn.send( JSON.stringify({
-        event: 'account_creation_success'
+        event: 'login_approved'
       }));
+      conn.user_data.logged = true;
     }
   } catch(e) {
     console.dir(e);
@@ -201,6 +203,10 @@ async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
     var conn = request.accept( null, request.origin );
     console.log( "New connection established." );
+    conn.user_data = {
+      logged: false,
+      admin: false
+    };
     conn.on('message', function(message) {
       console.log( "Message received!" );
       const inMessage = JSON.parse( message.utf8Data );
@@ -210,6 +216,10 @@ async function initialize_websockets() {
         const date_end = format_date( inMessage.end_date );
         search( tags_ref, date_start, date_end, conn );
       } else if( inMessage.event == "new_article" ) {
+        if( conn.user_data.logged == false ) {
+          console.log( "ERROR: Unlogged user attempted to create article." );
+          return;
+        }
         const article_ref = inMessage.article;
         do_process_article( article_ref.title, article_ref.date, article_ref.body );
       } else if( inMessage.event == "date_search" ) {
