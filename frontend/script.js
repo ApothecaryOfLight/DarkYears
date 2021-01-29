@@ -84,13 +84,13 @@ function add_search_terms( in_terms, component_handle, myUID ) {
 function format_date( inDate ) {
   //inDate = inDate.replace( '/', '-' );
   const date_obj = inDate.split( '/' );
-  let day = date_obj[0];
-  let month = date_obj[1];
+  let month = date_obj[0];
+  let day = date_obj[1];
   let year = date_obj[2];
   if( day < 10 ) { day = "0" + day; }
   if( month < 10 ) { month = "0" + month; }
-  const return_date = day + "-" + month + "-" + year;
-  //console.log( return_date );
+  const return_date = year + "-" + month + "-" + day;
+  console.log( return_date );
   return return_date;
 }
 function run_search( component_handle, ws ) {

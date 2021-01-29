@@ -23,6 +23,16 @@ function distinct( value, index, self ) {
   return self.indexOf(value) === index;
 }
 
+function format_date( inDate ) {
+  console.log( inDate );
+  const year = inDate.substr(0,4);
+  const month = inDate.substr( 5,2 );
+  const day = inDate.substr( 8,2 );
+  const formatted_date = year + "-" + month + "-" + day;
+  console.log( "formatted:" + formatted_date );
+  return formatted_date;
+}
+
 function do_process_article_text( inArticleText ) {
   let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
@@ -44,7 +54,7 @@ function do_process_article_text( inArticleText ) {
 async function do_process_article( inArticleTitle, inArticleDate, inArticleText ) {
   console.log("do_process_article");
 
-//1) Get article_id (ensure it is reserved, if func fails retire ID).
+  //1) Get article_id (ensure it is reserved, if func fails retire ID).
   const [article_id_rows,article_id_fields] = await mysql_promisepool.query(
     "SELECT DarkYearsDB.generate_new_id();"
   );
@@ -52,16 +62,17 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   let new_id = article_id_rows[0]['DarkYearsDB.generate_new_id()'];
   console.log( "new_ID: " + new_id );
 
-//) Convert date into mySQL DATE format (mm-dd-yyyy) -> (yyyy-mm-dd)
-  console.log( "DATE:" );
+  //) Convert date into mySQL DATE format (mm-dd-yyyy) -> (yyyy-mm-dd)
+/*  console.log( "DATE:" );
   console.table( inArticleDate );
   const year = inArticleDate.substr(0,4);
   const month = inArticleDate.substr( 5,2 );
   const day = inArticleDate.substr( 8,2 );
   const formatted_date = year + "-" + month + "-" + day;
-  console.log( "formatted date: " + formatted_date );
+  console.log( "formatted date: " + formatted_date );*/
+  const formatted_date = format_date( inArticleDate );
 
-//2) Add article_id, title and text to articles table.
+  //2) Add article_id, title and text to articles table.
   const [rows,fields] = await mysql_promisepool.query(
     "INSERT INTO articles ( article_id, article_title, article_text, article_date ) " +
     "VALUES (" +
@@ -73,10 +84,10 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   );
   console.log( rows, fields );
 
-//3) Process text body into object.
+  //3) Process text body into object.
   let WordsArray = do_process_article_text( inArticleText + " " + inArticleTitle );
 
-//4) Process date into calendar table
+  //4) Add date into calendar table
   const date_query = "INSERT INTO calendar " + 
     " ( date_stamp, article_id_fk, article_title )" +
     " VALUES(\'" + formatted_date +
@@ -91,7 +102,7 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   );
   console.log( date_rows, date_fields );
 
-//5) Add words to calendar table.
+  //5) Add search terms to words table.
   for( word_obj in WordsArray ) {
     console.log( word_obj );
     let first_letter = WordsArray[word_obj].first_letter;
@@ -195,16 +206,16 @@ async function initialize_websockets() {
       const inMessage = JSON.parse( message.utf8Data );
       if( inMessage.event == "search" ) {
         const tags_ref = inMessage.tags;
-        const date_start = inMessage.start_date;
-        const date_end = inMessage.end_date;
+        const date_start = format_date( inMessage.start_date );
+        const date_end = format_date( inMessage.end_date );
         search( tags_ref, date_start, date_end, conn );
       } else if( inMessage.event == "new_article" ) {
         const article_ref = inMessage.article;
         do_process_article( article_ref.title, article_ref.date, article_ref.body );
       } else if( inMessage.event == "date_search" ) {
         console.log( "Date search!" );
-        const date_start = inMessage.start_date;
-        const date_end = inMessage.end_date;
+        const date_start = format_date(inMessage.start_date);
+        const date_end = format_date(inMessage.end_date);
         date_search( date_start, date_end, conn );
       } else if( inMessage.event == "login" ) {
         console.dir( inMessage );
@@ -228,9 +239,8 @@ async function initialize_websockets() {
   console.log( "Websockets initialized." );
 }
 
-async function search( inWords, date_start, date_end, conn ) {
-  console.log( "Tag search" );
-  const contents = [];
+async function search( words, date_start, date_end, conn ) {
+/*  const contents = [];
   console.dir( inWords );
   console.log( Object.keys(inWords).length );
   if( Object.keys(inWords).length == 0 ) {
@@ -297,7 +307,43 @@ async function search( inWords, date_start, date_end, conn ) {
       query_text
     );
     if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
-  }
+  }*/
+  console.log( "Tag search" );
+
+  //Compose the date search
+  let date_search = " AND articles.article_date >= " +
+    "\'" + date_start + "\'" +
+    " AND " +
+    "\'" + date_end + "\';"
+
+  //Compose the string of search terms fro the WHERE clause.
+  let words_search = "";
+  words.forEach( word => {
+    const formatted_word = word.toUpperCase();
+    words_search += "words.word = " + "\'" + formatted_word + "\' AND "
+  });
+  words_search = words_search.substring( 0, words_search.length - 4 );
+
+  //Compose the query itself.
+  const query_text = "SELECT " +
+    "articles.article_title, " +
+    "articles.article_text, articles.article_date " +
+    "FROM articles " +
+    "INNER JOIN words " +
+    "ON articles.article_id = words.article_id_fk " +
+    "WHERE " + words_search + date_search
+    ";";
+
+  console.log( query_text );
+
+  //Run query.
+  const [word_rows,word_fields] = await mysql_promisepool.query(
+    query_text
+  );
+
+  //Process result into JSON object and send to client.
+  let contents = [];
+  if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
   conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
 }
 
@@ -347,12 +393,13 @@ async function date_search( date_start, date_end, conn ) {
   const query_text = "SELECT " +
     "articles.article_title, articles.article_text, articles.article_date  " +
     "FROM articles " +
-    "INNER JOIN calendar "
-    "ON articles.article_id = calendar.article_fk_id "
+    "INNER JOIN calendar " +
+    "ON articles.article_id = calendar.article_id_fk " +
     "WHERE calendar.date_stamp >= " +
     "\'" + date_start + "\'" +
     " AND " +
-    "\'" + date_end + "\';"
+    "calendar.date_stamp <=\'" + date_end + "\';"
+  console.log( query_text );
   const [word_rows,word_fields] = await mysql_promisepool.query( query_text );
   if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
   conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
