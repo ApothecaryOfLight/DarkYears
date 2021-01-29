@@ -4,6 +4,7 @@
 	"dependencies": {
 		"http": "0.x",
 		"mysql2": "2.x",
+		"nodemon": "2.x",
 		"websocket": "1.x"
 	}
 }

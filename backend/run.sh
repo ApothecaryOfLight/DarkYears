@@ -1,1 +1,1 @@
-echo "Not scripted yet."
+npx nodemon --watch . main.js
