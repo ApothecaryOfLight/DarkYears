@@ -4,8 +4,6 @@ const wsServerLib = require('websocket').server;
 
 let http_server;
 
-
-
 let mysql_pool;
 let mysql_promisepool;
 async function init_mysql_pool() {
@@ -19,27 +17,7 @@ async function init_mysql_pool() {
     dateStrings: true
   });
   mysql_promisepool = mysql_pool.promise();
-  //do_test();
 }
-
-
-
-function do_test() {
-  mysql_pool.query(
-    'INSERT INTO articles (article_title, article_id, article_text) VALUES (\"testing title\", 1, \"this is the body\" );',
-    function( error, results, fields ) {
-      if( error ) { console.error( error ); return; }
-      console.dir( results );
-      console.dir( fields );
-    }
-  );
-}
-
-
-
-let article_title = "testing apart article";
-let article_date = "2015_06_20";
-let article_text = "this is the text of an article for Dark Years.";
 
 function distinct( value, index, self ) {
   return self.indexOf(value) === index;
@@ -99,12 +77,12 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   let WordsArray = do_process_article_text( inArticleText + " " + inArticleTitle );
 
 //4) Process date into calendar table
-  const date_table_name = "calendar_" + year + "_" + month;
-  console.log( date_table_name );
-
-  const date_query = "INSERT INTO " + date_table_name + 
-    " ( day, article_id_fk )" +
-    " VALUES(" + day + "," + new_id + ");";
+  const date_query = "INSERT INTO calendar " + 
+    " ( date_stamp, article_id_fk, article_title )" +
+    " VALUES(\'" + formatted_date +
+    "\', " + new_id +
+    ", \'" + inArticleTitle + "\'" +
+    ");";
 
   console.log( date_query );
 
@@ -114,25 +92,20 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   console.log( date_rows, date_fields );
 
 //5) Add words to calendar table.
-  //console.table( WordsArray );
   for( word_obj in WordsArray ) {
     console.log( word_obj );
-    //console.log( WordsArray[word_obj].first_letter );
-    //console.log( WordsArray[word_obj].second_letter );
     let first_letter = WordsArray[word_obj].first_letter;
     let second_letter = WordsArray[word_obj].second_letter;
     let TableName = first_letter + "_" + second_letter;
     console.log( TableName );
-    let query_text = "INSERT INTO " + TableName +
-      " (word, article_id_fk, article_title) " + "VALUES ( \'" + word_obj + 
-      "\', " + new_id + ", \'" + inArticleTitle + "\' );";
+    let query_text = "INSERT INTO words " +
+      " (word, article_id_fk) " + "VALUES ( \'" + word_obj + 
+      "\', " + new_id + ");";
     console.log( query_text );
     const [word_rows,word_fields] = await mysql_promisepool.query(
       query_text
     );
   }
-//6) Add article id to words table
-
 }
 
 async function init_http() {
@@ -151,8 +124,6 @@ async function init_http() {
 
 async function main() {
   var done = await init_mysql_pool();
-  //do_process_article( "article_title", "12345", "testing, test. this!_ ye-p!" );
-  //search( "testing" );
   var doneB = await init_http();
   var doneC = await initialize_websockets();
 }
@@ -164,9 +135,6 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
     "WHERE username_hash = " + "\'" + username_hash + "\';";
   try {
     const [login_rows,login_fields] = await mysql_promisepool.query( query_text );
-    //console.dir( login_rows );
-    //console.log( login_rows[0] );
-    //console.log( login_rows[0].username );
     const data_pass = String.fromCharCode.apply(null,login_rows[0].password_hash);
     if( data_pass == password_hash ) {
       console.log( "Credentials validated!" );
@@ -179,7 +147,6 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
         event: 'password_rejected'
       }));
     }
-    //console.log( password_hash );
   } catch(e) {
     console.dir( e );
     console.log( "Error!" );
@@ -208,7 +175,6 @@ async function attempt_create_account( conn, username, username_hash, password_h
         event: 'account_creation_success'
       }));
     }
-    //console.dir( acct_fields );
   } catch(e) {
     console.dir(e);
     if( e.code == 'ER_DUP_ENTRY' ) {
@@ -226,19 +192,12 @@ async function initialize_websockets() {
     console.log( "New connection established." );
     conn.on('message', function(message) {
       console.log( "Message received!" );
-      //console.table( message );
       const inMessage = JSON.parse( message.utf8Data );
-      //console.table( inMessage );
-      //If search, return search query from database.
       if( inMessage.event == "search" ) {
         const tags_ref = inMessage.tags;
         const date_start = inMessage.start_date;
         const date_end = inMessage.end_date;
         search( tags_ref, date_start, date_end, conn );
-        /*tags_ref.forEach( tag => {
-          const result = await search( tag, conn );
-          console.log( result );
-        });*/
       } else if( inMessage.event == "new_article" ) {
         const article_ref = inMessage.article;
         do_process_article( article_ref.title, article_ref.date, article_ref.body );
@@ -269,8 +228,8 @@ async function initialize_websockets() {
   console.log( "Websockets initialized." );
 }
 
-//TODO: Make this return scrollable units of content
 async function search( inWords, date_start, date_end, conn ) {
+  console.log( "Tag search" );
   const contents = [];
   console.dir( inWords );
   console.log( Object.keys(inWords).length );
@@ -278,11 +237,6 @@ async function search( inWords, date_start, date_end, conn ) {
     console.log( "Empty!" );
     return;
   }
-/*
-TODO: Combine these into one single query,
-and guarantee that any given article will
-only be included once in the result set.
-*/
   for( inWord of inWords ) {
     let first_letter = inWord.charAt(0).toUpperCase();
     let second_letter = inWord.charAt(1).toUpperCase();
@@ -309,7 +263,6 @@ only be included once in the result set.
       if( month_counter < 10 ) { month_counter_string += "0"; }
       month_counter_string += month_counter;
       const calendar_name = "calendar_" + year_counter + "_" + month_counter_string;
-      //console.log( calendar_name );
       calendar_query += "SELECT " + calendar_name + ".article_id_fk " +
         " FROM " + calendar_name + " UNION "
       month_counter++;
@@ -318,22 +271,10 @@ only be included once in the result set.
         year_counter++;
       }
     }
-    //calendar_query.splice( -7, 6 );
-    //console.log( typeof( calendar_query ) );
     calendar_query = calendar_query.substring( 0, calendar_query.length - 6 );
     calendar_query += ") as calendars ON words.article_id = calendars.article_id_fk";
     console.log( calendar_query );
     console.log( "\n\n" );
-    /*let query_text = "SELECT " +
-      table_name + ".word, " +
-      table_name + ".article_id_fk, " +
-      table_name + ".article_title, " +
-      "articles.article_text " +
-      "FROM " + table_name + " " +
-      "INNER JOIN articles ON " + table_name + ".article_id_fk = articles.article_id " +
-      "WHERE " + table_name + ".word= \'" +
-      word + "\' " +
-      ";";*/
     let query_text = "SELECT " +
       "words.article_id, words.article_title, " +
       "words.article_text, words.article_date " +
@@ -351,30 +292,21 @@ only be included once in the result set.
       word + "\' " +
       " ) as words " +
       calendar_query;
-
-      //";";
     console.log( query_text );
     const [word_rows,word_fields] = await mysql_promisepool.query(
       query_text
     );
-    //console.table( word_rows );
-
-    //conn.send( JSON.stringify( word_rows ) );
-    //console.table( word_rows );
-    //console.log( typeof( word_rows ) );
     if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
   }
-  //console.log( contents );
-  //return word_rows;
   conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
 }
 
 async function date_search( date_start, date_end, conn ) {
-  const contents = [];
+  console.log( "date_search" );
+/*  const contents = [];
 
   let start_date = date_start;
   let end_date = date_end;
-  //console.log( start_date + " / " + end_date );
   let start_year = start_date.substr(6,4);
   let start_month = Number(start_date.substr(0,2));
   let start_day = start_date.substr(3,2);
@@ -382,7 +314,6 @@ async function date_search( date_start, date_end, conn ) {
   let end_year = end_date.substr(6,4);
   let end_month = Number(end_date.substr(0,2));
   let end_day = end_date.substr(3,2);
-  //console.log( start_year + "/" + start_month + " to " + end_year + "/" + end_month );
 
   let month_counter = start_month;
   let year_counter = start_year;
@@ -404,19 +335,26 @@ async function date_search( date_start, date_end, conn ) {
 
   calendar_query = calendar_query.substring( 0, calendar_query.length - 6 );
   calendar_query += ");";
-  //console.log( calendar_query );
-  //console.log( "\n\n" );
 
   let query_text = "SELECT " +
     "articles.article_title, articles.article_text, articles.article_date " +
     "FROM articles " +
     "WHERE articles.article_id" + calendar_query;
-  //console.log( query_text );
   const [word_rows,word_fields] = await mysql_promisepool.query(
     query_text
-  );
+  );*/
+  const contents = [];
+  const query_text = "SELECT " +
+    "articles.article_title, articles.article_text, articles.article_date  " +
+    "FROM articles " +
+    "INNER JOIN calendar "
+    "ON articles.article_id = calendar.article_fk_id "
+    "WHERE calendar.date_stamp >= " +
+    "\'" + date_start + "\'" +
+    " AND " +
+    "\'" + date_end + "\';"
+  const [word_rows,word_fields] = await mysql_promisepool.query( query_text );
   if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
-  //return;
   conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
 }
 
