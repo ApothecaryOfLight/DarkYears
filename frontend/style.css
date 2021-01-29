@@ -2,7 +2,12 @@
 Disable text selection
 */
 *{
-  cursor: default;
+  -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /*
@@ -109,16 +114,25 @@ Search interface
   grid-template-columns: 10% 20% 20% 20% 20% 10%;
 }
 #search_interface_title {
-  grid-column-start: 1;
-  grid-column-end: 7;
+  grid-column-start: 3;
+  grid-column-end: 5;
 
   grid-row: 1;
 
   text-align: center;
   font-weight: bold;
+  font-size: 3em;
+
+  border: 1px solid black;
+  border-style: none none solid none;
+
+  padding-top: 1em;
 }
 /*Date picker*/
 #date_range_title {
+  padding-top: 1em;
+  padding-bottom: 1em;
+
   grid-column-start: 1;
   grid-column-end: 7;
 
@@ -126,6 +140,7 @@ Search interface
 
   text-align: center;
   font-weight: bold;
+  font-size: 2em;
 }
 #date_picker_container {
   grid-column-start: 2;

@@ -278,6 +278,11 @@ async function search( inWords, date_start, date_end, conn ) {
     console.log( "Empty!" );
     return;
   }
+/*
+TODO: Combine these into one single query,
+and guarantee that any given article will
+only be included once in the result set.
+*/
   for( inWord of inWords ) {
     let first_letter = inWord.charAt(0).toUpperCase();
     let second_letter = inWord.charAt(1).toUpperCase();
