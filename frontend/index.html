@@ -131,12 +131,29 @@
   <!--Settings interface-->
   <div id="settings_interface" style="display:none;">
     Settings here
+    <div>Pagination settings.</div>
   </div>
 
 
   <!--Contact interface-->
   <div id="contact_interface" style="display:none;">
-    Contact Here
+    <div class="contact_row">
+      Name:
+      <input id="contact_name" type="text" placeholder="Name"/>
+    </div>
+    <div class="contact_row">
+      Organization (optional):
+      <input id="contact_org" type="text" placeholder="Org."/>
+    </div>
+    <div class="contact_row">
+      Contact Email:
+      <input id="contact_email" type="text" placeholder="Email"/>
+    </div>
+    <textarea id="contact_form" placeholder="Write here!"></textarea>
+    <div id="contact_buttons">
+      <button id="submit_contact_form">Submit</button>
+      <button id="reset_contact_form">Reset</button>
+    </div>
   </div>
 
 
