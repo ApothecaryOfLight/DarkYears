@@ -2,6 +2,69 @@ const mysql = require('mysql2');
 const http = require('http');
 const wsServerLib = require('websocket').server;
 
+const file_system = require('fs');
+let logging_file;
+function init_log() {
+  console.log( "Initializing error log." );
+  try {
+    //1) If logs directory doesn't exist, create it.
+    if( !file_system.existsSync( "./logs" ) ) {
+      file_system.mkdirSync( "./logs" );
+    }
+
+    //2) Get timestamp to give log a unique(ish) name.
+    const date = new Date();
+    let date_string = date.toString();
+    date_string = date_string.substr( 0, date_string.length-38 );
+    date_string = date_string.replace( /\s/g, '_' );
+    logging_file = "logs/" + date_string;
+
+    //3) Create the log and write the first line to file.
+    file_system.writeFile( logging_file, "Initializing log.\n",
+      function(err) {
+        //console.error( err );
+        if( err ) {
+          throw err;
+        }
+      }
+    );
+  } catch( error ) {
+    //On error log to screen, because this was an error in creating the logs!
+    console.group();
+    console.log( "Filesystem error!" );
+    console.error( error );
+    console.groupEnd();
+  }
+  console.log( "Error log initialized." );
+}
+init_log();
+function log( type, msg, conn ) {
+  try{
+    let log_message = type;
+    if( conn ) {
+      log_message += "@" + conn.socket.remoteAddress;
+    }
+    log_message += "::" + msg + "\n";
+    file_system.appendFile( logging_file, msg, function(error) {
+      if( error ) {
+        throw error;
+      }
+    });
+  } catch( error ) {
+    //On error log to screen, because this was an error in writing to the logs!
+    console.group();
+    console.log( "Filesystem error!" );
+    console.error( error );
+    console.groupEnd();
+  }
+}
+/*function log_user( conn, msg ) {
+  const composed_msg = conn.socket.remoteAddress + " :: " + msg;
+  file_system.writeFile( "log", composed_msg );
+}*/
+
+log( "app", "test" );
+
 let http_server;
 
 let mysql_pool;
@@ -203,6 +266,7 @@ async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
     var conn = request.accept( null, request.origin );
     console.log( "New connection established." );
+    console.log( conn.socket.remoteAddress );
     conn.user_data = {
       logged: false,
       admin: false
