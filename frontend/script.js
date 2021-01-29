@@ -109,12 +109,12 @@ function run_search( component_handle, ws ) {
     //console.dir( component_handle.state.search_terms );
     //3) Empty input field
     search_tag_input_field.value = "";
+  }
 
-    //4) Convert search terms from DOM appropriate format to array
-    //const search_arr = [];
-    for( const key in search_terms ) {
-      search_arr.push( search_terms[key].text );
-    }
+  //4) Convert search terms from DOM appropriate format to array
+  //const search_arr = [];
+  for( const key in search_terms ) {
+    search_arr.push( search_terms[key].text );
   }
 
   //5) Get the date range values.
@@ -132,6 +132,7 @@ function run_search( component_handle, ws ) {
   //console.log( search_arr.length );
 
   let event_type = "search_request_error";
+  console.log( "SAL:" + search_arr.length );
   if( search_arr.length == 0 ) {
     event_type = "date_search";
   } else if( search_arr.length > 0 ) {
