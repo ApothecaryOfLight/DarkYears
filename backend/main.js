@@ -20,9 +20,8 @@ function init_log() {
     logging_file = "logs/" + date_string;
 
     //3) Create the log and write the first line to file.
-    file_system.writeFile( logging_file, "Initializing log.\n",
+    file_system.writeFile( logging_file, "Initializing log.\n<br>",
       function(err) {
-        //console.error( err );
         if( err ) {
           throw err;
         }
@@ -47,8 +46,8 @@ function log( type, msg, conn ) {
     if( conn ) {
       log_message += "@" + conn.socket.remoteAddress;
     }
-    log_message += "::" + msg + "\n";
-    file_system.appendFile( logging_file, msg, function(error) {
+    log_message += "::" + msg + "\n<br>";
+    file_system.appendFile( logging_file, log_message, function(error) {
       if( error ) {
         throw error;
       }
@@ -61,19 +60,13 @@ function log( type, msg, conn ) {
     console.groupEnd();
   }
 }
-/*function log_user( conn, msg ) {
-  const composed_msg = conn.socket.remoteAddress + " :: " + msg;
-  file_system.writeFile( "log", composed_msg );
-}*/
-
-log( "app", "test" );
 
 let http_server;
 
 let mysql_pool;
 let mysql_promisepool;
 async function init_mysql_pool() {
-  console.log( "Initializing MySQL pool." );
+  log( "app", "Initializing MySQL pool." );
   mysql_pool = await mysql.createPool({
     connectionLimit: 50,
     host: 'localhost',
@@ -102,7 +95,6 @@ function do_process_article_text( inArticleText ) {
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
   let words = punctuation_removed.split(" ");
   words = words.filter(distinct);
-  console.log( "UNQ:" + words );
   let words_obj = {};
   words.forEach( word => {
     if( word.length > 2 ) {
@@ -176,12 +168,12 @@ async function init_http() {
     response.end();
   });
   await http_server.listen( 3000, function() {
-    console.log( "Listening on port 3000" );
+    log( "app", "Listening on port 3000" );
   });
   wsServer = new wsServerLib({
     httpServer: http_server
   });
-  console.log( "HTTP initialized" );
+  log( "app", "HTTP initialized" );
 }
 
 async function main() {
@@ -192,12 +184,11 @@ async function main() {
 }
 
 async function attempt_login( conn, username, username_hash, password_hash ) {
-  log( "user", "Attempting login", conn );
+  log( "user", "Attempting login.", conn );
 
   //1) Check login to see if admin credentials have been provided
   if( username_hash == "21232f297a57a5a743894a0e4a801fc3" &&
     password_hash == "5f4dcc3b5aa765d61d8327deb882cf99" ) {
-    console.log( "Admin pass!" );
     log( "user", "Admin credentials verified.", conn );
     conn.send( JSON.stringify({
       event: 'admin_approved'
@@ -227,9 +218,7 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
       }));
     }
   } catch( error ) {
-    //TODO: Log this error to file.
-    console.dir( e );
-    console.log( "Error!" );
+    log( "error", "Unspecified error in attempt_login: " + error, conn );
     //TODO: Iron out error protocol, so event is error and text is another prop
     conn.send( JSON.stingify({
       event: 'Unspecified error, please report to dev.'
@@ -238,7 +227,7 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
 }
 
 async function attempt_create_account( conn, username, username_hash, password_hash ) {
-  console.log( "Attempting to create account!" );
+  log( "user", "Attempting to create account.", conn );
   const query_text = "INSERT INTO " +
     "users ( username, username_hash, password_hash ) " +
     "VALUES ( " +
@@ -246,11 +235,8 @@ async function attempt_create_account( conn, username, username_hash, password_h
     "\'" + username_hash + "\', " +
     "\'" + password_hash + "\'" +
     ");";
-  console.log( query_text );
   try {
     const [acct_rows,acct_fields] = await mysql_promisepool.query( query_text );
-    console.dir( acct_rows );
-    console.log( acct_rows.affectedRows );
     if( acct_rows.affectedRows == 1 ) {
       conn.send( JSON.stringify({
         event: 'login_approved'
@@ -258,9 +244,8 @@ async function attempt_create_account( conn, username, username_hash, password_h
       conn.user_data.logged = true;
     }
   } catch(e) {
-    console.dir(e);
     if( e.code == 'ER_DUP_ENTRY' ) {
-      console.log( "Username already exists!" );
+      log( "user", "Username already exists!", conn );
       conn.send( JSON.stringify({
         event: 'account_creation_failed_username_exists'
       }));
@@ -271,16 +256,6 @@ async function attempt_create_account( conn, username, username_hash, password_h
 function get_logs_filelist() {
   const logs_folder = './logs/';
   const file_list = file_system.readdirSync( logs_folder );
-  //let file_list = [];
-  /*file_system.readdirSync( logs_folder, function(error,files) {
-    //console.log( files );
-    for( const file of files ) {
-    //files.forEach( file => {
-      //console.log( file );
-      file_list.push( file );
-    };
-  });*/
-  console.log( file_list );
   return file_list;
 }
 
@@ -289,17 +264,14 @@ function get_log( filename ) {
     "./logs/" + filename,
     {encoding:'utf8', flag:'r'}
   );
-console.log( file_contents );
   return file_contents;
 }
 
 function send_log( conn, log ) {
-console.log( "send_log" );
   const logs_folder = './logs/';
   const file_list = file_system.readdirSync( logs_folder );
   file_list.forEach( file => {
     if( file == log ) {
-      console.log( "File found." );
       conn.send( JSON.stringify({
         event: 'log_file',
         log: get_log( file )
@@ -310,7 +282,6 @@ console.log( "send_log" );
 
 function send_admin_logs( conn ) {
   if( conn.user_data.admin == true ) {
-    //const filelist_arr = await get_logs_filelist();
     conn.send( JSON.stringify({
       event: 'admin_logs_filelist',
       filelist: get_logs_filelist()
@@ -324,14 +295,14 @@ function send_admin_logs( conn ) {
 async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
     var conn = request.accept( null, request.origin );
-    console.log( "New connection established." );
-    console.log( conn.socket.remoteAddress );
+    log( "app", "New connection established.", conn );
     conn.user_data = {
       logged: false,
       admin: false
     };
+    log( "user", "New connection estasblished.", conn );
     conn.on('message', function(message) {
-      console.log( "Message received!" );
+      log( "user", "Message received!", conn );
       const inMessage = JSON.parse( message.utf8Data );
       if( inMessage.event == "search" ) {
         const tags_ref = inMessage.tags;
@@ -340,18 +311,16 @@ async function initialize_websockets() {
         search( tags_ref, date_start, date_end, conn );
       } else if( inMessage.event == "new_article" ) {
         if( conn.user_data.logged == false ) {
-          console.log( "ERROR: Unlogged user attempted to create article." );
+          log( "permission", "Unlogged user attempted to create article.", conn );
           return;
         }
         const article_ref = inMessage.article;
         do_process_article( article_ref.title, article_ref.date, article_ref.body );
       } else if( inMessage.event == "date_search" ) {
-        console.log( "Date search!" );
         const date_start = format_date(inMessage.start_date);
         const date_end = format_date(inMessage.end_date);
         date_search( date_start, date_end, conn );
       } else if( inMessage.event == "login" ) {
-        console.dir( inMessage );
         attempt_login(
           conn,
           inMessage.username_plaintext,
@@ -359,7 +328,6 @@ async function initialize_websockets() {
           inMessage.password_hashed
         );
       } else if( inMessage.event == "create_account" ) {
-        console.dir( inMessage );
         attempt_create_account(
           conn,
           inMessage.username_plaintext,
@@ -367,12 +335,10 @@ async function initialize_websockets() {
           inMessage.password_hashed
         );
       } else if( inMessage.event == "request_admin_logs" ) {
-        console.log( "Admin log request." );
         send_admin_logs(
           conn
         );
       } else if( inMessage.event == "request_log" ) {
-        console.log( "Request log." );
         send_log (
           conn,
           inMessage.log
@@ -380,7 +346,7 @@ async function initialize_websockets() {
       }
     });
   });
-  console.log( "Websockets initialized." );
+  log( "app", "Websockets initialized." );
 }
 
 async function search( words, date_start, date_end, conn ) {
