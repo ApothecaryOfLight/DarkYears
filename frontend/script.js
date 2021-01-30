@@ -8,7 +8,6 @@ class UID {
     this.UIDs = [];
   }
   generateUID( inField ) {
-    //console.log( "Generating first UID of field " + inField + "." );
     if( !this.UIDs[inField] ) {
       this.UIDs[inField] = {
       counter: 1,
@@ -16,15 +15,12 @@ class UID {
       };
       return 0;
     } else if( this.UIDs[inField].retiredIDs.length ) {
-      //console.log( "Issuing retired UID of field " + inField + "." );
       return this.UIDs[inField].retiredIDs.pop();
     } else {
-      //console.log( "Generating new UID of field " + inField + "." );
       return this.UIDs[inField].counter++;
     }
   }
   retireUID( inField, inUID ) {
-    //console.log( "reitiring UID " + inUID + " of " + inField );
     this.UIDs[inField].retiredIDs.push( inUID );
   }
 }
@@ -36,7 +32,6 @@ Search function
 let search_tag_handler;
 let ws_handler;
 function run_search_wrapper() {
-  //console.log( "step1" );
   run_search( search_tag_handler, ws_handler );
 }
 
@@ -45,15 +40,10 @@ function distinct( value, index, self ) {
 }
 
 function do_process_tags( inArticleText ) {
-//console.log( "do_process_tags" );
-//console.log( inArticleText );
   let punctuation_regex = new RegExp('[^\\w\\s]|[_]','g');
   let punctuation_removed = inArticleText.replace( punctuation_regex, "" );
   let words = punctuation_removed.split(" ");
-//console.dir( words );
   words = words.filter(distinct);
-//console.dir( words );
-  //console.log( "UNQ:" + words );
   let words_arr = [];
   words.forEach( word => {
     words_arr.push( word );
@@ -63,8 +53,6 @@ function do_process_tags( inArticleText ) {
 
 function add_search_terms( in_terms, component_handle, myUID ) {
   //1) Add the search terms.
-//console.log( "add_search_terms" );
-//console.dir( in_terms );
   if( in_terms.length == 0 ) { return; }
   in_terms.forEach( term => {
     let duplicate = false;
@@ -82,7 +70,6 @@ function add_search_terms( in_terms, component_handle, myUID ) {
   });
 }
 function format_date( inDate ) {
-  //inDate = inDate.replace( '/', '-' );
   const date_obj = inDate.split( '/' );
   let month = date_obj[0];
   let day = date_obj[1];
@@ -93,25 +80,21 @@ function format_date( inDate ) {
   return return_date;
 }
 function run_search( component_handle, ws ) {
-  //console.log( "run_search" );
   const search_tag_input_field = document.getElementById("search_bar");
   const search_arr = [];
   //1) Add search term to search_tag_container
-  //if( search_tag_input_field.value == "" ) { return; }
-//console.log( search_tag_input_field.value );
   if( search_tag_input_field.value != "" ) {
     const tags = do_process_tags( search_tag_input_field.value );
     add_search_terms( tags, component_handle, myUID );
 
     //2) Update react component to display the state change to the user
     component_handle.setState( component_handle.state.search_terms );
-    //console.dir( component_handle.state.search_terms );
+
     //3) Empty input field
     search_tag_input_field.value = "";
   }
 
   //4) Convert search terms from DOM appropriate format to array
-  //const search_arr = [];
   for( const key in search_terms ) {
     search_arr.push( search_terms[key].text );
   }
@@ -119,16 +102,10 @@ function run_search( component_handle, ws ) {
   //5) Get the date range values.
   let start_date = document.getElementById("slider-range-value1").innerHTML;
   let end_date = document.getElementById("slider-range-value2").innerHTML;
-  /*start_date = start_date.replace( '/', '-' );
-  end_date = end_date.replace( '/', '-' );
-  start_date = start_date.replace( '/', '-' );
-  end_date = end_date.replace( '/', '-' );
-  console.log( start_date );
-  console.log( end_date );*/
+
   start_date = format_date( start_date );
   end_date = format_date( end_date );
 
-  //console.log( search_arr.length );
 
   let event_type = "search_request_error";
   if( search_arr.length == 0 ) {
@@ -244,7 +221,6 @@ class ArticleManager extends React.Component {
         <div className='article_text'>{article.article_text}</div>
       </div>
     );
-console.log( dom );
     return(
       dom
     );
@@ -345,7 +321,6 @@ submit_article_button.addEventListener("click", function() {
     date: article_date,
     body: article_body
   }
-  //console.dir( article_obj );
   const article_json = JSON.stringify({event: "new_article", article: article_obj});
   ws.send( article_json );
 });
@@ -379,16 +354,12 @@ ws.addEventListener( 'open', function() {
   const username_field = document.getElementById("username_input");
   const password_field = document.getElementById("password_input");
   login_attempt_button.addEventListener( 'click', function() {
-//    console.log( "Logging!" );
     const username_plaintext = username_field.value;
     const password_plaintext = password_field.value;
-//    console.log( username_plaintext + "/" + password_plaintext );
 
     const hashed_username = md5(username_plaintext);
-//    console.log( "hashed username: " + hashed_username );
 
     const hashed_password = md5(password_plaintext);
-//    console.log( "hashed password: " + hashed_password );
 
     ws.send( JSON.stringify({
       event: 'login',
@@ -399,12 +370,9 @@ ws.addEventListener( 'open', function() {
   });
 
   create_account_button.addEventListener( 'click', function() {
-//    console.log( "Creating account!" );
     const username_plaintext = username_field.value;
     const password_plaintext = password_field.value;
-//    console.log( username_plaintext + "/" + password_plaintext );
     const hashed_username = md5(username_plaintext);
-//    console.log( hashed_username );
     const hashed_password = md5(password_plaintext);
     ws.send( JSON.stringify({
       event: 'create_account',
@@ -419,7 +387,6 @@ ws.addEventListener( 'open', function() {
   const settings_interface_button = document.getElementById("settings_interface_button");
   const admin_interface_button = document.getElementById("admin_interface_button");
   logout_button.addEventListener( 'click', function() {
-    console.log( "Loggin out." );
     login_button.style.display = "block";
     logout_button.style.display = "none";
     create_article_interface_button.style.display = "none";
@@ -434,7 +401,6 @@ ws.addEventListener( 'open', function() {
   ws.addEventListener( 'message', function(message) {
     const payload = JSON.parse( message.data );
     if( payload.event == "login_approved" ) {
-      console.log( "Login approved!" );
       modal_interface.style.display = "none";
       login_modal.style.display = "none";
       login_button.style.display = "none";
@@ -443,18 +409,14 @@ ws.addEventListener( 'open', function() {
       profile_interface_button.style.display = "block";
       settings_interface_button.style.display = "block";
     } else if( payload.event == "password_rejected" ) {
-      console.log( "Password rejected." );
       launch_error_modal( "Incorrect login information." );
     } else if( payload.event == "unknown_login_error" ) {
-      console.log( "Unknown login error." );
       launch_error_modal( "Unknown login error, contact dev!" );
     } else if( payload.event == "account_creation_success" ) {
       console.log( "Account creation success." );
     } else if( payload.event == "account_creation_failed_username_exists" ) {
-      console.log( "Account creation failed, username exists!" );
       launch_error_modal( "Username already taken!" );
     } else if( payload.event == "admin_approved" ) {
-      console.log( "Admin login received." );
       modal_interface.style.display = "none";
       login_modal.style.display = "none";
       login_button.style.display = "none";
@@ -489,7 +451,6 @@ close_error_modal.addEventListener( 'click', function() {
 Admin interface code.
 */
 function request_log( logname ) {
-  console.log( logname );
   ws.send( JSON.stringify({
     event: 'request_log',
     log: logname
@@ -522,7 +483,6 @@ function launch_admin_interface() {
       });
       admin_logs_display.innerHTML = dom;
     } else if( payload.event == 'log_file' ) {
-      console.log( "log file" );
       const logfile_contents = payload.log;
       admin_logs_display.innerHTML = logfile_contents;
     }
