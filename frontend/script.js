@@ -90,7 +90,6 @@ function format_date( inDate ) {
   if( day < 10 ) { day = "0" + day; }
   if( month < 10 ) { month = "0" + month; }
   const return_date = year + "-" + month + "-" + day;
-  console.log( return_date );
   return return_date;
 }
 function run_search( component_handle, ws ) {
@@ -132,7 +131,6 @@ function run_search( component_handle, ws ) {
   //console.log( search_arr.length );
 
   let event_type = "search_request_error";
-  console.log( "SAL:" + search_arr.length );
   if( search_arr.length == 0 ) {
     event_type = "date_search";
   } else if( search_arr.length > 0 ) {
@@ -233,9 +231,7 @@ class ArticleManager extends React.Component {
     });
   }
   render() {
-    //console.log( "Rendering!" );
     if( this.state.articles.length == 0 ) {
-      //console.log( "Returned empty" );
       const empty_return = <div className='empty_articles_container'></div>;
       return( empty_return );
     }
@@ -248,6 +244,7 @@ class ArticleManager extends React.Component {
         <div className='article_text'>{article.article_text}</div>
       </div>
     );
+console.log( dom );
     return(
       dom
     );
@@ -282,7 +279,9 @@ ws.addEventListener( 'error', function(event) {
 /*
 Menu code.
 */
-const interfaces = [ "search", "create_article", "profile", "settings", "contact" ];
+const interfaces = [
+  "search", "create_article", "profile", "settings", "contact", "admin"
+];
 
 function set_interface( target ) {
   interfaces.forEach( target_name => {
@@ -418,7 +417,7 @@ ws.addEventListener( 'open', function() {
   const create_article_interface_button = document.getElementById("create_article_interface_button");
   const profile_interface_button = document.getElementById("profile_interface_button");
   const settings_interface_button = document.getElementById("settings_interface_button");
-
+  const admin_interface_button = document.getElementById("admin_interface_button");
   logout_button.addEventListener( 'click', function() {
     console.log( "Loggin out." );
     login_button.style.display = "block";
@@ -426,6 +425,10 @@ ws.addEventListener( 'open', function() {
     create_article_interface_button.style.display = "none";
     profile_interface_button.style.display = "none";
     settings_interface_button.style.display = "none";
+    admin_interface_button.style.display = "none";
+  });
+  admin_interface_button.addEventListener( 'click', function() {
+    set_interface( 'admin' );
   });
 
   ws.addEventListener( 'message', function(message) {
@@ -450,6 +453,18 @@ ws.addEventListener( 'open', function() {
     } else if( payload.event == "account_creation_failed_username_exists" ) {
       console.log( "Account creation failed, username exists!" );
       launch_error_modal( "Username already taken!" );
+    } else if( payload.event == "admin_approved" ) {
+      console.log( "Admin login received." );
+      modal_interface.style.display = "none";
+      login_modal.style.display = "none";
+      login_button.style.display = "none";
+      logout_button.style.display = "block";
+      create_article_interface_button.style.display = "block";
+      profile_interface_button.style.display = "block";
+      settings_interface_button.style.display = "block";
+      admin_interface_button.style.display = "block";
+
+      launch_admin_interface();
     }
   });
 });
@@ -468,3 +483,67 @@ const close_error_modal = document.getElementById("close_error_modal_button");
 close_error_modal.addEventListener( 'click', function() {
   error_modal.style.display = "none";
 });
+
+
+/*
+Admin interface code.
+*/
+function request_log( logname ) {
+  console.log( logname );
+  ws.send( JSON.stringify({
+    event: 'request_log',
+    log: logname
+  }));
+}
+
+function launch_admin_interface() {
+  const admin_logs_button = document.getElementById('admin_logs_button');
+  const admin_logs_display = document.getElementById('admin_logs_display');
+  admin_logs_button.addEventListener( 'click', function() {
+    console.log( "get logs." );
+    ws.send( JSON.stringify({
+      event: 'request_admin_logs'
+    }));
+  });
+
+  ws.addEventListener( 'message', function( message ) {
+    const payload = JSON.parse( message.data );
+    if( payload.event == 'admin_logs_filelist' ) {
+      let dom = "";
+      payload.filelist.forEach( (file) => {
+        let onClick = "onclick=\'request_log(" +
+          "\"" + file + "\"" + ")\'";
+
+        dom += "<div class=\'log_file\' " +
+          onClick +
+          ">" +
+          file +
+          "</div>";
+      });
+      admin_logs_display.innerHTML = dom;
+    } else if( payload.event == 'log_file' ) {
+      console.log( "log file" );
+      const logfile_contents = payload.log;
+      admin_logs_display.innerHTML = logfile_contents;
+    }
+  });
+  /*const get_logs_button() {
+    
+  }
+  const get_users_button() {
+    
+  }
+  function populate_admin_logs() {
+    
+  }
+  function render_admin_logs( inPage ) {
+    
+  }
+  function toggle_filter_for_users() {
+    
+  }
+  function toggle_filter_for_errors() {
+    
+  }
+  */
+}

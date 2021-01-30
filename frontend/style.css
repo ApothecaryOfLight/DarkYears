@@ -50,6 +50,9 @@ body {
 #settings_interface_button {
   display: none;
 }
+#admin_interface_button {
+  display: none;
+}
 
 #buttons_bar {
   display: flex;
@@ -423,4 +426,13 @@ Error modal
   height: 3em;
   align-self: center;
   text-align: center;
+}
+
+
+/*
+Admin menu
+*/
+#admin_menu {
+  display: flex;
+  flex-direction: row;
 }

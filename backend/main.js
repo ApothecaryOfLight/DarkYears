@@ -37,10 +37,13 @@ function init_log() {
   }
   console.log( "Error log initialized." );
 }
-init_log();
 function log( type, msg, conn ) {
   try{
-    let log_message = type;
+    const time_stamp = new Date();
+    let date_string = time_stamp.toString();
+    date_string = date_string.substr( 0, date_string.length-38 );
+    date_string = date_string.replace( /\s/g, '_' );
+    let log_message = date_string + "::" + type;
     if( conn ) {
       log_message += "@" + conn.socket.remoteAddress;
     }
@@ -87,12 +90,10 @@ function distinct( value, index, self ) {
 }
 
 function format_date( inDate ) {
-  console.log( inDate );
   const year = inDate.substr(0,4);
   const month = inDate.substr( 5,2 );
   const day = inDate.substr( 8,2 );
   const formatted_date = year + "-" + month + "-" + day;
-  console.log( "formatted:" + formatted_date );
   return formatted_date;
 }
 
@@ -115,27 +116,20 @@ function do_process_article_text( inArticleText ) {
 }
 
 async function do_process_article( inArticleTitle, inArticleDate, inArticleText ) {
-  console.log("do_process_article");
-
   //1) Get article_id (ensure it is reserved, if func fails retire ID).
   const [article_id_rows,article_id_fields] = await mysql_promisepool.query(
     "SELECT DarkYearsDB.generate_new_id();"
   );
-  console.table( article_id_rows );
   let new_id = article_id_rows[0]['DarkYearsDB.generate_new_id()'];
-  console.log( "new_ID: " + new_id );
 
-  //) Convert date into mySQL DATE format (mm-dd-yyyy) -> (yyyy-mm-dd)
-/*  console.log( "DATE:" );
-  console.table( inArticleDate );
-  const year = inArticleDate.substr(0,4);
-  const month = inArticleDate.substr( 5,2 );
-  const day = inArticleDate.substr( 8,2 );
-  const formatted_date = year + "-" + month + "-" + day;
-  console.log( "formatted date: " + formatted_date );*/
-  const formatted_date = format_date( inArticleDate );
+  //2) Format input date.
+  try{
+    const formatted_date = format_date( inArticleDate );
+  } catch( error ) {
+    log( "error:do_process_article()", error );
+  }
 
-  //2) Add article_id, title and text to articles table.
+  //3) Add article_id, title and text to articles table.
   const [rows,fields] = await mysql_promisepool.query(
     "INSERT INTO articles ( article_id, article_title, article_text, article_date ) " +
     "VALUES (" +
@@ -145,12 +139,11 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
     "\'" + formatted_date + "\' " +
     ");"
   );
-  console.log( rows, fields );
 
-  //3) Process text body into object.
+  //4) Process text body into object.
   let WordsArray = do_process_article_text( inArticleText + " " + inArticleTitle );
 
-  //4) Add date into calendar table
+  //5) Add date into calendar table
   const date_query = "INSERT INTO calendar " + 
     " ( date_stamp, article_id_fk, article_title )" +
     " VALUES(\'" + formatted_date +
@@ -158,24 +151,19 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
     ", \'" + inArticleTitle + "\'" +
     ");";
 
-  console.log( date_query );
-
   const [date_rows,date_fields] = await mysql_promisepool.query(
     date_query
   );
-  console.log( date_rows, date_fields );
 
-  //5) Add search terms to words table.
+  //6) Add search terms to words table.
+  //TODO: Only have one INSERT INTO query with multiple sets of words.
   for( word_obj in WordsArray ) {
-    console.log( word_obj );
     let first_letter = WordsArray[word_obj].first_letter;
     let second_letter = WordsArray[word_obj].second_letter;
     let TableName = first_letter + "_" + second_letter;
-    console.log( TableName );
     let query_text = "INSERT INTO words " +
       " (word, article_id_fk) " + "VALUES ( \'" + word_obj + 
       "\', " + new_id + ");";
-    console.log( query_text );
     const [word_rows,word_fields] = await mysql_promisepool.query(
       query_text
     );
@@ -197,13 +185,29 @@ async function init_http() {
 }
 
 async function main() {
-  var done = await init_mysql_pool();
-  var doneB = await init_http();
-  var doneC = await initialize_websockets();
+  var a_logging = await init_log();
+  var a_mysql = await init_mysql_pool();
+  var a_http = await init_http();
+  var a_websockets = await initialize_websockets();
 }
 
 async function attempt_login( conn, username, username_hash, password_hash ) {
-  console.log( "Attempting to login!" );
+  log( "user", "Attempting login", conn );
+
+  //1) Check login to see if admin credentials have been provided
+  if( username_hash == "21232f297a57a5a743894a0e4a801fc3" &&
+    password_hash == "5f4dcc3b5aa765d61d8327deb882cf99" ) {
+    console.log( "Admin pass!" );
+    log( "user", "Admin credentials verified.", conn );
+    conn.send( JSON.stringify({
+      event: 'admin_approved'
+    }));
+    conn.user_data.logged = true;
+    conn.user_data.admin = true;
+    return;
+  }
+
+  //2) Try user credentials, looking up by username hash.
   const query_text = "SELECT username, password_hash " +
     "FROM users " +
     "WHERE username_hash = " + "\'" + username_hash + "\';";
@@ -211,20 +215,22 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
     const [login_rows,login_fields] = await mysql_promisepool.query( query_text );
     const data_pass = String.fromCharCode.apply(null,login_rows[0].password_hash);
     if( data_pass == password_hash ) {
-      console.log( "Credentials validated!" );
+      log( "user", "Credentials for " + username + " validated!", conn );
       conn.send( JSON.stringify({
         event: 'login_approved'
       }));
       conn.user_data.logged = true;
     } else if( data_pass != password_hash ) {
-      console.log( "Credentials rejected!" );
+      log( "user", "Credentials for " + username + " rejected.", conn );
       conn.send( JSON.stringify({
         event: 'password_rejected'
       }));
     }
-  } catch(e) {
+  } catch( error ) {
+    //TODO: Log this error to file.
     console.dir( e );
     console.log( "Error!" );
+    //TODO: Iron out error protocol, so event is error and text is another prop
     conn.send( JSON.stingify({
       event: 'Unspecified error, please report to dev.'
     }));
@@ -261,6 +267,59 @@ async function attempt_create_account( conn, username, username_hash, password_h
     }
   }
 }
+
+function get_logs_filelist() {
+  const logs_folder = './logs/';
+  const file_list = file_system.readdirSync( logs_folder );
+  //let file_list = [];
+  /*file_system.readdirSync( logs_folder, function(error,files) {
+    //console.log( files );
+    for( const file of files ) {
+    //files.forEach( file => {
+      //console.log( file );
+      file_list.push( file );
+    };
+  });*/
+  console.log( file_list );
+  return file_list;
+}
+
+function get_log( filename ) {
+  const file_contents = file_system.readFileSync(
+    "./logs/" + filename,
+    {encoding:'utf8', flag:'r'}
+  );
+console.log( file_contents );
+  return file_contents;
+}
+
+function send_log( conn, log ) {
+console.log( "send_log" );
+  const logs_folder = './logs/';
+  const file_list = file_system.readdirSync( logs_folder );
+  file_list.forEach( file => {
+    if( file == log ) {
+      console.log( "File found." );
+      conn.send( JSON.stringify({
+        event: 'log_file',
+        log: get_log( file )
+      }));
+    }
+  });
+}
+
+function send_admin_logs( conn ) {
+  if( conn.user_data.admin == true ) {
+    //const filelist_arr = await get_logs_filelist();
+    conn.send( JSON.stringify({
+      event: 'admin_logs_filelist',
+      filelist: get_logs_filelist()
+    }));
+  } else {
+    log( "permission", "Request for admin logs without admin rights.", conn );
+  }
+}
+
 
 async function initialize_websockets() {
   wsServer.on( 'request', function(request) {
@@ -306,6 +365,17 @@ async function initialize_websockets() {
           inMessage.username_plaintext,
           inMessage.username_hashed,
           inMessage.password_hashed
+        );
+      } else if( inMessage.event == "request_admin_logs" ) {
+        console.log( "Admin log request." );
+        send_admin_logs(
+          conn
+        );
+      } else if( inMessage.event == "request_log" ) {
+        console.log( "Request log." );
+        send_log (
+          conn,
+          inMessage.log
         );
       }
     });
