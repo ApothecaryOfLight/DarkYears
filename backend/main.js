@@ -115,10 +115,11 @@ async function do_process_article( inArticleTitle, inArticleDate, inArticleText 
   let new_id = article_id_rows[0]['DarkYearsDB.generate_new_id()'];
 
   //2) Format input date.
+  let formatted_date;
   try{
-    const formatted_date = format_date( inArticleDate );
+    formatted_date = format_date( inArticleDate );
   } catch( error ) {
-    log( "error:do_process_article()", error );
+    log( "error:do_process_article()", "Formatting date error: " + error );
   }
 
   //3) Add article_id, title and text to articles table.
@@ -314,6 +315,7 @@ async function initialize_websockets() {
           log( "permission", "Unlogged user attempted to create article.", conn );
           return;
         }
+        log( "user", "Creating new article.", conn );
         const article_ref = inMessage.article;
         do_process_article( article_ref.title, article_ref.date, article_ref.body );
       } else if( inMessage.event == "date_search" ) {

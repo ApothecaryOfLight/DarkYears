@@ -467,6 +467,21 @@ function launch_admin_interface() {
     }));
   });
 
+
+  const admin_generate_data_button = document.getElementById('admin_generate_data_button');
+  admin_generate_data_button.addEventListener('click', function() {
+    console.log( "Generate data..." );
+    let counter = 10;
+    for( counter = 10; counter < 2000; counter+=10 ) {
+      const new_article = generate_articles_varied( counter );
+      ws.send( JSON.stringify({
+        event: "new_article",
+        article: new_article
+      }));
+    }
+    //generate_articles_varied( 150 );
+  });
+
   ws.addEventListener( 'message', function( message ) {
     const payload = JSON.parse( message.data );
     if( payload.event == 'admin_logs_filelist' ) {
