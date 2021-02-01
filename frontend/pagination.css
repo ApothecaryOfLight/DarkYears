@@ -1,0 +1,26 @@
+.pagination_container {
+  display: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: nowrap;
+  grid-row: 7;
+  grid-column-start: 3;
+  grid-column-end: 5;
+  padding-bottom: 5em;
+}
+
+.page_button {
+  padding: 1em;
+  border: 1px black solid;
+  align-text: center;
+  border-radius: 16px;
+}
+
+.page_button:hover {
+  background-color: yellow;
+}
+
+.page_button_current {
+  background-color: blue;
+}
