@@ -221,8 +221,8 @@ async function attempt_login( conn, username, username_hash, password_hash ) {
   } catch( error ) {
     log( "error", "Unspecified error in attempt_login: " + error, conn );
     //TODO: Iron out error protocol, so event is error and text is another prop
-    conn.send( JSON.stingify({
-      event: 'Unspecified error, please report to dev.'
+    conn.send( JSON.stringify({
+      event: 'password_rejected'
     }));
   }
 }

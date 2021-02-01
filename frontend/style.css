@@ -407,7 +407,7 @@ Error modal
   z-index: 10002;
   position: fixed;
   background-color: white;
-  border: 6px solid red;/*#0a2458;*/
+  border: 6px solid #3d689b;
   border-radius: 16px;
   justify-content: space-around;
   flex-direction: column;
