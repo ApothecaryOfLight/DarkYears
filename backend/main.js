@@ -380,7 +380,6 @@ async function search( words, date_start, date_end, entities_per_page, current_p
     "WHERE " + words_search + date_search +
     " LIMIT " + entities_per_page*current_page + ", " + entities_per_page + " " +
     ";";
-console.log( query_text );
   //Run query.
   const [word_rows,word_fields] = await mysql_promisepool.query(
     query_text
@@ -393,9 +392,7 @@ console.log( query_text );
     "ON articles.article_id = words.article_id_fk " +
     "WHERE " + words_search + date_search +
     ";";
-console.log( count_query );
   const [count_rows,count_fields] = await mysql_promisepool.query( count_query );
-console.table( count_rows );
 
   //Process result into JSON object and send to client.
   let contents = [];
@@ -417,10 +414,7 @@ async function date_search( date_start, date_end, entities_per_page, current_pag
     " AND " +
     "calendar.date_stamp <=\'" + date_end + "\' " +
     ";";
-console.log( query_size );
   const [size_rows,size_fields] = await mysql_promisepool.query( query_size );
-console.table( size_rows );
-
   const query_text = "SELECT " +
     "articles.article_title, articles.article_text, articles.article_date  " +
     "FROM articles " +
@@ -432,7 +426,6 @@ console.table( size_rows );
     "calendar.date_stamp <=\'" + date_end + "\'" +
     " LIMIT " + entities_per_page*current_page + ", " + entities_per_page + " " +
     ";"
-console.log( query_text );
   const [word_rows,word_fields] = await mysql_promisepool.query( query_text );
   const contents = [];
   if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
