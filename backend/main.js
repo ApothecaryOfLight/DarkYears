@@ -309,7 +309,9 @@ async function initialize_websockets() {
         const tags_ref = inMessage.tags;
         const date_start = format_date( inMessage.start_date );
         const date_end = format_date( inMessage.end_date );
-        search( tags_ref, date_start, date_end, conn );
+        const entities_per_page = inMessage.entities_per_page;
+        const current_page = inMessage.current_page;
+        search( tags_ref, date_start, date_end, entities_per_page, current_page, conn );
       } else if( inMessage.event == "new_article" ) {
         if( conn.user_data.logged == false ) {
           log( "permission", "Unlogged user attempted to create article.", conn );
@@ -321,7 +323,9 @@ async function initialize_websockets() {
       } else if( inMessage.event == "date_search" ) {
         const date_start = format_date(inMessage.start_date);
         const date_end = format_date(inMessage.end_date);
-        date_search( date_start, date_end, conn );
+        const entities_per_page = inMessage.entities_per_page;
+        const current_page = inMessage.current_page;
+        date_search( date_start, date_end, entities_per_page, current_page, conn );
       } else if( inMessage.event == "login" ) {
         attempt_login(
           conn,
@@ -351,12 +355,12 @@ async function initialize_websockets() {
   log( "app", "Websockets initialized." );
 }
 
-async function search( words, date_start, date_end, conn ) {
+async function search( words, date_start, date_end, entities_per_page, current_page, conn ) {
   //Compose the date search
   let date_search = " AND articles.article_date >= " +
     "\'" + date_start + "\'" +
     " AND " +
-    "\'" + date_end + "\';"
+    "\'" + date_end + "\'"
 
   //Compose the string of search terms fro the WHERE clause.
   let words_search = "";
@@ -373,21 +377,50 @@ async function search( words, date_start, date_end, conn ) {
     "FROM articles " +
     "INNER JOIN words " +
     "ON articles.article_id = words.article_id_fk " +
-    "WHERE " + words_search + date_search
+    "WHERE " + words_search + date_search +
+    " LIMIT " + entities_per_page*current_page + ", " + entities_per_page + " " +
     ";";
-
+console.log( query_text );
   //Run query.
   const [word_rows,word_fields] = await mysql_promisepool.query(
     query_text
   );
 
+  //Compose the count query
+  const count_query = "SELECT COUNT(*) as count " +
+    "FROM articles " +
+    "INNER JOIN words " +
+    "ON articles.article_id = words.article_id_fk " +
+    "WHERE " + words_search + date_search +
+    ";";
+console.log( count_query );
+  const [count_rows,count_fields] = await mysql_promisepool.query( count_query );
+console.table( count_rows );
+
   //Process result into JSON object and send to client.
   let contents = [];
   if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
-  conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
+  conn.send( JSON.stringify( {
+    type: "articles",
+    articles: contents,
+    size: count_rows[0].count
+  } ) );
 }
 
-async function date_search( date_start, date_end, conn ) {
+async function date_search( date_start, date_end, entities_per_page, current_page, conn ) {
+  const query_size = "SELECT COUNT(*) as count " +
+    "FROM articles " +
+    "INNER JOIN calendar " +
+    "ON articles.article_id = calendar.article_id_fk " +
+    "WHERE calendar.date_stamp >= " +
+    "\'" + date_start + "\'" +
+    " AND " +
+    "calendar.date_stamp <=\'" + date_end + "\' " +
+    ";";
+console.log( query_size );
+  const [size_rows,size_fields] = await mysql_promisepool.query( query_size );
+console.table( size_rows );
+
   const query_text = "SELECT " +
     "articles.article_title, articles.article_text, articles.article_date  " +
     "FROM articles " +
@@ -396,11 +429,18 @@ async function date_search( date_start, date_end, conn ) {
     "WHERE calendar.date_stamp >= " +
     "\'" + date_start + "\'" +
     " AND " +
-    "calendar.date_stamp <=\'" + date_end + "\';"
+    "calendar.date_stamp <=\'" + date_end + "\'" +
+    " LIMIT " + entities_per_page*current_page + ", " + entities_per_page + " " +
+    ";"
+console.log( query_text );
   const [word_rows,word_fields] = await mysql_promisepool.query( query_text );
   const contents = [];
   if( Object.keys(word_rows).length > 0 ) { contents.push( word_rows ); }
-  conn.send( JSON.stringify( { type: "articles", articles: contents } ) );
+  conn.send( JSON.stringify( {
+    type: "articles",
+    articles: contents,
+    size: size_rows[0].count
+  } ) );
 }
 
 main();

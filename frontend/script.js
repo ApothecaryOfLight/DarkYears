@@ -32,7 +32,7 @@ Search function
 let search_tag_handler;
 let ws_handler;
 function run_search_wrapper() {
-  run_search( search_tag_handler, ws_handler );
+  run_search( search_tag_handler, ws_handler, 0 );
 }
 
 function distinct( value, index, self ) {
@@ -79,7 +79,7 @@ function format_date( inDate ) {
   const return_date = year + "-" + month + "-" + day;
   return return_date;
 }
-function run_search( component_handle, ws ) {
+function run_search( component_handle, ws, curr_page ) {
   const search_tag_input_field = document.getElementById("search_bar");
   const search_arr = [];
   //1) Add search term to search_tag_container
@@ -119,7 +119,9 @@ function run_search( component_handle, ws ) {
     event: event_type,
     tags: search_arr,
     start_date: start_date,
-    end_date: end_date
+    end_date: end_date,
+    entities_per_page: 10,
+    current_page: curr_page
   });
 
   //7) Send search query to server.
@@ -131,8 +133,8 @@ function run_search( component_handle, ws ) {
 Search Tag Manager
 */
 class SearchTagManager extends React.Component {
-  constructor( search_terms, ws ) {
-    super( search_terms, ws );
+  constructor( search_terms, ws, current_page ) {
+    super( search_terms, ws, current_page );
     this.state = {...search_terms};
   }
   componentDidMount() {
@@ -143,10 +145,22 @@ class SearchTagManager extends React.Component {
     const search_tag_container = document.getElementById("tag_container");
     const add_search_term_button = document.getElementById("add_search_tag_button");
     add_search_term_button.addEventListener("click",function() {
-      run_search( thisHandle, ws );
+      run_search( thisHandle, ws, 0 );
     });
     ws.addEventListener( 'open', function() {
-      run_search( thisHandle, ws ); //Initial search on load.
+      run_search( thisHandle, ws, 0 ); //Initial search on load.
+      ws.addEventListener( 'message', function(event) {
+        const payload = JSON.parse(event.data);
+//console.dir( search_tag_handler );
+        if( payload.type == "articles" ) {
+          render_pagination_interface(
+            "article_pagination_container",
+            Math.ceil(payload.size/10),
+            search_tag_handler.state.current_page,
+            search_tag_handler
+          );
+        }
+      });
     });
   }
   doClick( inUID ) {
@@ -157,7 +171,7 @@ class SearchTagManager extends React.Component {
     });
     myUID.retireUID( "tags", inUID );
     this.setState( this.state.search_terms );
-    run_search( this, ws );
+    run_search( this, ws, 0 );
   }
   render() {
     let search_tags_element = this.state.search_terms.map( (search_term) =>
@@ -290,7 +304,7 @@ const search_terms = [];
 const articles = [];
 
 ReactDOM.render(
-  <SearchTagManager search_terms={search_terms} ws={ws}/>,
+  <SearchTagManager search_terms={search_terms} ws={ws} current_page={0}/>,
   document.getElementById('tag_container')
 );
 
