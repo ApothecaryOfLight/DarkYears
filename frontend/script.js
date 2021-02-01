@@ -256,6 +256,7 @@ ws.addEventListener( 'close', function(event) {
   console.log( "Websocket closed!" );
   console.dir( event );
   console.groupEnd();
+  launch_error_modal( "Connection with server lost!" );
 });
 
 ws.addEventListener( 'error', function(event) {
@@ -452,11 +453,15 @@ Error interface code
 const error_modal = document.getElementById("error_modal");
 const error_modal_message = document.getElementById("error_message");
 function launch_error_modal( ErrorMessage ) {
+  const modal_interface = document.getElementById("modal_interface");
+  modal_interface.style.display = "flex";
   error_modal.style.display = "flex";
   error_modal_message.innerHTML = ErrorMessage;
 }
 const close_error_modal = document.getElementById("close_error_modal_button");
 close_error_modal.addEventListener( 'click', function() {
+  const modal_interface = document.getElementById("modal_interface");
+  modal_interface.style.display = "none";
   error_modal.style.display = "none";
 });
 
