@@ -318,7 +318,7 @@ ReactDOM.render(
 /*
 Add article interface code.
 */
-const submit_article_button = document.getElementById("submit_article");
+const submit_article_button = document.getElementById("create_article_submit_button");
 const article_title_input = document.getElementById("create_article_type");
 const article_date_input = document.getElementById("create_article_date");
 const article_text_input = document.getElementById("create_article_text");

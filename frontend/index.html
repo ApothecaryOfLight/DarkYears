@@ -124,13 +124,24 @@
 
   <!--Create article interface-->
   <div id="create_article_interface" style="display:none;">
+
     <div id="create_article_title_container">
-      <span>Article Title:</span>
-      <input id="create_article_type" type="text"/>
+      <span id="create_article_title_text">Article Title:</span>
+      <input id="create_article_title_input" type="text"/>
     </div>
-    <input type="date" id="create_article_date" min="2015-06-01" max="2021-01-20" style="display:block;">
-    <textarea id="create_article_text" style="display:block"></textarea>
-    <button id="submit_article">Submit</button>
+
+    <div id="create_article_date_container">
+      <input type="date" id="create_article_date_input" min="2015-06-01" max="2021-01-20">
+    </div>
+
+    <div id="create_article_text_container">
+      <textarea id="create_article_text_field" style="display:block"></textarea>
+    </div>
+
+    <div id="create_article_submit_container">
+      <button id="create_article_submit_button">Submit</button>
+    </div>
+
   </div>
 
 
