@@ -75,4 +75,9 @@ echo "DELIMITER ;" >> create_schema.sql
 #Users table
 echo "CREATE TABLE users( username VARCHAR(150) NOT NULL, username_hash VARBINARY(64) NOT NULL, password_hash VARBINARY(64) NOT NULL, user_settings TEXT, PRIMARY KEY(username_hash) );" >> create_schema.sql
 
+
+#Contact table
+echo "CREATE TABLE contact( name VARCHAR(150), org VARCHAR(250), phone VARCHAR(50), email VARCHAR(150), message LONGTEXT );" >> create_schema.sql
+
+
 echo "All done!"

@@ -388,6 +388,11 @@ Modals
   background-color: #0a2458;
   color: white;
   font-weight: bold;
+
+  outline: none;
+}
+#login_button:active {
+  background-color: #1a3468;
 }
 #create_account_button {
   width: 45%;
@@ -396,6 +401,11 @@ Modals
   background-color: #0a2458;
   color: white;
   font-weight: bold;
+
+  outline: none;
+}
+#create_account_button:active {
+  background-color: #1a3468;
 }
 
 
@@ -426,7 +436,39 @@ Error modal
   height: 3em;
   align-self: center;
   text-align: center;
+
+  background-color: #0a2458;
+
+  border-radius: 16px;
+  border: none;
+  color: white;
+  font-weight: bold;
+
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+
+  outline: none;
 }
+#close_error_modal_button:active {
+  background-color: #1a3468;
+}
+
+/*.contact_form_button {
+  margin: .25em;
+  width: 8em;
+  height: 3em;
+
+  border-radius: 16px;
+  border: none;
+  background-color: #0a2458;
+  color: white;
+  font-weight: bold;
+
+  outline: none;
+}
+.contact_form_button:active {
+  background-color: #1a3468;
+}*/
 
 
 /*
@@ -435,4 +477,130 @@ Admin menu
 #admin_menu {
   display: flex;
   flex-direction: row;
+}
+
+
+
+/*
+Contact
+*/
+#contact_interface {
+  margin-left: 20%;
+  width: 60%;
+  margin-right: 20%;
+  display: grid;
+  grid-template-rows: auto auto auto auto auto auto auto;
+  grid-template-columns: 20% 80%;
+}
+
+
+#contact_interface_title {
+  font-size: 2em;
+  font-weight: bold;
+
+  grid-row: 1;
+  grid-column-start: 1;
+  grid-column-end: 3;
+
+  margin-bottom: 0.5em;
+
+  text-align: center;
+}
+#contact_interface_prompting {
+  font-size: 1.35em;
+
+  grid-row: 2;
+  grid-column-start: 1;
+  grid-column-end: 3;
+
+  margin-bottom: 1em;
+
+  text-align: center;
+}
+
+#contact_name_text {
+  grid-row: 3;
+  grid-column: 1;
+  height: 2em;
+  margin-bottom: 1em;
+}
+#contact_name_field {
+  grid-row: 3;
+  grid-column: 2;
+  margin-bottom: 1em;
+}
+
+
+#contact_organization_text {
+  grid-row: 4;
+  grid-column: 1;
+  height: 2em;
+  margin-bottom: 1em;
+}
+#contact_organization_field {
+  grid-row: 4;
+  grid-column: 2;
+  margin-bottom: 1em;
+}
+
+
+#contact_email_text {
+  grid-row: 5;
+  grid-column: 1;
+  height: 2em;
+  margin-bottom: 1em;
+}
+#contact_email_field {
+  grid-row: 5;
+  grid-column: 2;
+  margin-bottom: 1em;
+}
+
+
+#contact_phone_text {
+  grid-row: 6;
+  grid-column: 1;
+  margin-bottom: 1em;
+}
+#contact_phone_field {
+  grid-row: 6;
+  grid-column: 2;
+  margin-bottom: 1em;
+}
+
+
+#contact_form_field {
+  grid-row: 7;
+  grid-column-start: 1;
+  grid-column-end: 3;
+
+  text-rows: 5;
+
+  margin-bottom: 1.5em;
+}
+#contact_buttons {
+  display: flex;
+  justify-content: space-evenly;
+  grid-row: 8;
+
+  grid-column-start: 1;
+  grid-column-end: 3;
+
+  margin-bottom: 2em;
+}
+.contact_form_button {
+  margin: .25em;
+  width: 8em;
+  height: 3em;
+
+  border-radius: 16px;
+  border: none;
+  background-color: #0a2458;
+  color: white;
+  font-weight: bold;
+
+  outline: none;
+}
+.contact_form_button:active {
+  background-color: #1a3468;
 }

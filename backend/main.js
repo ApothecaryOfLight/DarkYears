@@ -349,10 +349,28 @@ async function initialize_websockets() {
           conn,
           inMessage.log
         );
+      } else if( inMessage.event == "contact_form" ) {
+        log( "CONTACT", "Received contact form!", conn );
+        record_contact_form(
+          inMessage.name, inMessage.org, inMessage.phone,
+          inMessage.email, inMessage.message
+        );
       }
     });
   });
   log( "app", "Websockets initialized." );
+}
+
+async function record_contact_form( name, org, phone, email, message ) {
+  let query = "INSERT INTO contact " +
+    "(name,org,phone,email,message) VALUES " +
+    "( \'" + name + "\' ," +
+    " \'" + org + "\' ," +
+    " \'" + phone + "\' ," +
+    " \'" + email + "\' ," +
+    " \'" + message + "\' );";
+  console.log( query );
+  const [rows,fields] = await mysql_promisepool.query( query );
 }
 
 async function search( words, date_start, date_end, entities_per_page, current_page, conn ) {

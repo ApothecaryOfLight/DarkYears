@@ -421,8 +421,8 @@ ws.addEventListener( 'open', function() {
       login_button.style.display = "none";
       logout_button.style.display = "block";
       create_article_interface_button.style.display = "block";
-      profile_interface_button.style.display = "block";
-      settings_interface_button.style.display = "block";
+      //profile_interface_button.style.display = "block";
+      //settings_interface_button.style.display = "block";
     } else if( payload.event == "password_rejected" ) {
       launch_error_modal( "Incorrect login information." );
     } else if( payload.event == "unknown_login_error" ) {
@@ -541,3 +541,52 @@ function launch_admin_interface() {
   }
   */
 }
+
+
+/*
+Contact interface functions
+*/
+const submit_contact_form_button = document.getElementById("submit_contact_form");
+const submit_reset_form_button = document.getElementById("reset_contact_form");
+
+const contact_name = document.getElementById("contact_name_field");
+const contact_organization = document.getElementById("contact_organization_field");
+const contact_phone = document.getElementById("contact_phone_field");
+const contact_email = document.getElementById("contact_email_field");
+
+const contact_form = document.getElementById("contact_form_field");
+
+submit_contact_form_button.addEventListener('click', function() {
+  console.log( "Submit form button." );
+  const name = contact_name.value;
+  const org = contact_organization.value;
+  const phone = contact_phone.value;
+  const email = contact_email.value;
+  const message = contact_form.value;
+  console.log( name + "," + org + "," + phone + "," + email );
+  console.log( message );
+
+  if( name == "" || email == "" || message == "" ) {
+    launch_error_modal( "Missing required fields (name/email/message)." );
+    return;
+  }
+
+  const json_obj = JSON.stringify({
+    event: 'contact_form',
+    name: name,
+    org: org,
+    phone: phone,
+    email: email,
+    message: message
+  });
+  ws.send( json_obj );
+
+  launch_error_modal( "Thank you! I will be in touch shortly." );
+});
+submit_reset_form_button.addEventListener('click', function() {
+  contact_name.value = "";
+  contact_organization.value = "";
+  contact_phone.value = "";
+  contact_email.value = "";
+  contact_form.value = "";
+});
