@@ -318,26 +318,90 @@ ReactDOM.render(
 /*
 Add article interface code.
 */
+function validate_title( inTitle ) {
+  //Validate length
+  if( inTitle.length > 150 ) {
+    return "Title too long.";
+  }
+  //Validate alphanumeric characters
+  //TODO: Regex check.
+
+  return true;
+}
+function validate_date( inDate ) {
+  //Validate date range
+  console.log( inDate );
+  let year = inDate.substr(0,4);
+  let month = inDate.substr(5,2);
+  let day = inDate.substr(8,2);
+
+  if( year < 2015 || year > 2021 ) {
+    return "Date out of range, must be between June 15th, 2015 and January 21st, 2021";
+  }
+  return true;
+}
+function validate_body( inBody ) {
+  let msg = true;
+  //Validate article total length.
+  if( inBody.length >= 500000 ) {
+    msg = "Article text too long."
+  }
+
+  //Validate each word's length.
+  let words_arr = inBody.split(" ");
+  words_arr.forEach( word => {
+    if( word.length > 150 ) {
+      msg = word + " is too long.";
+    }
+  });
+
+  //Validate alphanumeric characters
+  //TODO: Regex check.
+
+  return msg;
+}
 const submit_article_button = document.getElementById("create_article_submit_button");
-const article_title_input = document.getElementById("create_article_type");
-const article_date_input = document.getElementById("create_article_date");
-const article_text_input = document.getElementById("create_article_text");
+const article_title_input = document.getElementById("create_article_title_input");
+const article_date_input = document.getElementById("create_article_date_input");
+const article_text_input = document.getElementById("create_article_text_field");
 submit_article_button.addEventListener("click", function() {
   const article_title = article_title_input.value;
   const article_body = article_text_input.value;
   const article_date = article_date_input.value;
   if( article_title == "" || article_body == "" || article_date == "" ) {
     console.log( "Missing article part." );
-    //TODO: Error modal
+    launch_error_modal( "Must provide title, date and article text." );
     return;
   }
+
+  //1) Validate title length
+  let test_title = validate_title( article_title );
+  if( test_title != true ) {
+    launch_error_modal( test_title );
+    return;
+  }
+
+  //2) Validate article date.
+  let test_date = validate_date( article_date );
+  if( test_date != true ) {
+    launch_error_modal( test_date );
+    return;
+  }
+
+  //3) Validate article body.
+  let test_body = validate_body( article_body );
+  if( test_body !== true ) {
+    launch_error_modal( test_body );
+    return;
+  }
+
   const article_obj = {
     title: article_title,
     date: article_date,
     body: article_body
   }
   const article_json = JSON.stringify({event: "new_article", article: article_obj});
-  ws.send( article_json );
+//  ws.send( article_json );
 });
 
 
