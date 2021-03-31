@@ -22,3 +22,9 @@ sudo ufw allow ssh
 sudo ufw enable
 cd /etc/nginx/sites-enabled && sudo sed -i "s/root \/var\/www\/html;/root \/home\/ubuntu\/DarkYears\/frontend;/g" default
 sudo systemctl restart nginx
+
+
+#==CERTBOT==
+sudo apt-get install certbot
+sudo apt-get install python-certbot-nginx
+sudo certbox --nginx
