@@ -19,6 +19,7 @@ sudo mysql < create_schema.sh
 sudo apt-get install nginx -y
 sudo ufw allow 'Nginx HTTP'
 sudo ufw allow ssh
+sudo ufw allow https
 sudo ufw enable
 cd /etc/nginx/sites-enabled && sudo sed -i "s/root \/var\/www\/html;/root \/home\/ubuntu\/DarkYears\/frontend;/g" default
 sudo systemctl restart nginx
